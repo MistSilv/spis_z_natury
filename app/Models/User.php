@@ -2,31 +2,31 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Atrybuty, które mogą być masowo przypisywane.
      *
-     * @var list<string>
+     * @var array
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
+        'region_id',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Ukryte atrybuty przy serializacji.
      *
-     * @var list<string>
+     * @var array
      */
     protected $hidden = [
         'password',
@@ -34,15 +34,35 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Rzutowania atrybutów.
      *
-     * @return array<string, string>
+     * @var array
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    /**
+     * Relacje.
+     */
+    public function region()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Region::class);
+    }
+
+    public function produktSkany()
+    {
+        return $this->hasMany(ProduktSkany::class);
+    }
+
+    public function spisZNatury()
+    {
+        return $this->hasMany(SpisZNatury::class);
+    }
+
+    public function spisProdukty()
+    {
+        return $this->hasMany(SpisProdukty::class);
     }
 }
