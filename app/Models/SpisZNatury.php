@@ -13,3 +13,7 @@ class SpisZNatury extends Model
     public function region() { return $this->belongsTo(Region::class); }
     public function spisProdukty() { return $this->hasMany(SpisProdukty::class, 'spis_id'); }
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> fc4ff3a2163296e26293897d79b059344df439af

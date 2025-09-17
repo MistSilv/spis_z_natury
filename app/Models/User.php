@@ -8,7 +8,12 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    
+
+    
 
     /**
      * Atrybuty, które mogą być masowo przypisywane.
@@ -19,8 +24,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
-        'region_id',
     ];
 
     /**
@@ -66,3 +69,15 @@ class User extends Authenticatable
         return $this->hasMany(SpisProdukty::class);
     }
 }
+
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Authenticatable
+{
+
+}
+

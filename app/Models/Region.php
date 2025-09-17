@@ -12,4 +12,8 @@ class Region extends Model
     public function produktSkany() { return $this->hasMany(ProduktSkany::class); }
     public function spisZNatury() { return $this->hasMany(SpisZNatury::class); }
     public function spisProdukty() { return $this->hasMany(SpisProdukty::class); }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> fc4ff3a2163296e26293897d79b059344df439af
