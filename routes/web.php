@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StocktakingController;
+use App\Http\Controllers\ProduktSkanyController;
 
 // Przekierowanie ze strony głównej na /login
 Route::get('/', function () {
@@ -51,7 +52,13 @@ Route::delete('/stocktakings/item/{item}', [StocktakingController::class, 'delet
     ->name('stocktakings.deleteItem');
 
 
-   
+
+
+Route::get('/produkt-skany', [ProduktSkanyController::class, 'index'])->name('produkt_skany.index');
+Route::get('/produkt-skany/create', [ProduktSkanyController::class, 'create'])->name('produkt_skany.create');
+Route::post('/produkt-skany', [ProduktSkanyController::class, 'store'])->name('produkt_skany.store');
+Route::get('/produkt-skany/{produktSkany}', [ProduktSkanyController::class, 'show'])->name('produkt_skany.show');
+
 
 
 
