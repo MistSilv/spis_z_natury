@@ -33,20 +33,7 @@
             <div class="hidden sm:flex space-x-4">
                 <a href="{{ route('welcome') }}" class="px-4 py-2 rounded bg-green-900 hover:bg-green-700 text-white font-semibold transition">
                     Strona Główna
-                </a>
-                <a href="{{ route('products.index') }}" class="px-4 py-2 rounded bg-green-900 hover:bg-green-700 text-white font-semibold transition">
-                    Produkty
-                </a>
-                <a href="{{ route('stocktakings.index') }}"
-                class="px-3 py-2 rounded hover:bg-gray-700 {{ request()->routeIs('stocktakings.index') ? 'bg-gray-700' : '' }}">
-                Lista spisów
-                </a>
-                <a href="{{ route('stocktakings.create') }}"
-                class="px-3 py-2 rounded hover:bg-gray-700 {{ request()->routeIs('stocktakings.create') ? 'bg-gray-700' : '' }}">
-                Nowy spis
-                </a>
-
-                <form method="POST" action="{{ route('logout') }}">
+                </a> 
                     @csrf
                     <button type="submit"
                             class="px-4 py-2 rounded bg-red-800 hover:bg-red-600 text-white font-semibold transition">
@@ -60,18 +47,7 @@
             <a href="{{ route('welcome') }}" class="block px-4 py-2 rounded bg-emerald-800 hover:bg-emerald-600 text-white font-semibold transition">
                 Strona Główna
             </a>
-            <a href="{{ route('products.index') }}" class="block px-4 py-2 rounded bg-emerald-800 hover:bg-emerald-600 text-white font-semibold transition">
-                Produkty
-            </a>
-            <a href="{{ route('stocktakings.index') }}"
-            class="px-3 py-2 rounded hover:bg-gray-700 {{ request()->routeIs('stocktakings.index') ? 'bg-gray-700' : '' }}">
-            Lista spisów
-            </a>
-            <a href="{{ route('stocktakings.create') }}"
-            class="px-3 py-2 rounded hover:bg-gray-700 {{ request()->routeIs('stocktakings.create') ? 'bg-gray-700' : '' }}">
-            Nowy spis
-            </a>
-            <form method="POST" action="{{ route('logout') }}">
+     
                 @csrf
                 <button type="submit"
                         class="w-full text-left px-4 py-2 rounded bg-red-800 hover:bg-red-600 text-white font-semibold transition">
