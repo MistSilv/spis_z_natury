@@ -13,7 +13,3 @@ class SpisProdukty extends Model
     public function user() { return $this->belongsTo(User::class); }
     public function region() { return $this->belongsTo(Region::class); }
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> fc4ff3a2163296e26293897d79b059344df439af

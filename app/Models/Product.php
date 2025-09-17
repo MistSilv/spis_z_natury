@@ -12,7 +12,3 @@ class Product extends Model
     public function barcodes() { return $this->hasMany(Barcode::class); }
     public function produktSkany() { return $this->hasMany(ProduktSkany::class); }
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> fc4ff3a2163296e26293897d79b059344df439af
