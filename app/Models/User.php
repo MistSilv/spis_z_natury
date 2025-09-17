@@ -10,18 +10,23 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+        use HasFactory, Notifiable;
+
+    
+
+    
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $fillable = ['name', 'email', 'password', 'role', 'region_id'];
+
+    public function region() { return $this->belongsTo(Region::class); }
+    public function produktSkany() { return $this->hasMany(ProduktSkany::class); }
+    public function spisZNatury() { return $this->hasMany(SpisZNatury::class); }
+    public function spisProdukty() { return $this->hasMany(SpisProdukty::class); }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -46,3 +51,15 @@ class User extends Authenticatable
         ];
     }
 }
+
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Authenticatable
+{
+
+}
+
