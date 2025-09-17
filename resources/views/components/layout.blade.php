@@ -33,7 +33,9 @@
             <div class="hidden sm:flex space-x-4">
                 <a href="{{ route('welcome') }}" class="px-4 py-2 rounded bg-green-900 hover:bg-green-700 text-white font-semibold transition">
                     Strona Główna
-                </a> 
+                </a>
+        
+                <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
                             class="px-4 py-2 rounded bg-red-800 hover:bg-red-600 text-white font-semibold transition">
@@ -47,7 +49,8 @@
             <a href="{{ route('welcome') }}" class="block px-4 py-2 rounded bg-emerald-800 hover:bg-emerald-600 text-white font-semibold transition">
                 Strona Główna
             </a>
-     
+       
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
                         class="w-full text-left px-4 py-2 rounded bg-red-800 hover:bg-red-600 text-white font-semibold transition">
