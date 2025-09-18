@@ -17,7 +17,7 @@
     </div>
 
     <div class="overflow-x-auto rounded-lg shadow border border-slate-800">
-        <table class="min-w-full bg-slate-900 text-gray-200">
+        <table id="products-table" class="min-w-full bg-slate-900 text-gray-200">
             <thead class="bg-slate-800">
                 <tr>
                     <th class="px-4 py-2 text-left">ID</th>
@@ -37,10 +37,12 @@
                     <td class="px-4 py-2">{{ $skan->barcode ?? '-' }}</td>
                     <td class="px-4 py-2">{{ $skan->scanned_at->format('Y-m-d H:i') }}</td>
                     <td class="px-4 py-2 flex gap-2">
-                        <button onclick="editQuantity({{ $skan->id }}, '{{ $skan->product->name }}', {{ $skan->quantity }})"
+                       <button 
+                            onclick="editQuantity({{ $skan->id }}, {{ Js::from($skan->product->name) }}, {{ $skan->quantity }})"
                             class="bg-teal-700 hover:bg-teal-600 text-slate-100 px-3 py-1 rounded shadow transition">
                             Edytuj
                         </button>
+
 
                         <form method="POST" action="{{ route('produkt_skany.destroy', $skan) }}" onsubmit="return confirm('Na pewno usunąć?');">
                             @csrf
@@ -54,15 +56,16 @@
                 </tr>
                 @empty
                 <tr>
-                    <td class="px-4 py-2 text-center text-gray-500">Brak zeskanowanych produktów</td>
+                    <td class="px-4 py-2 text-center text-gray-500" colspan="6">Brak zeskanowanych produktów</td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+
     <div class="mt-4">
-                {{ $produktSkany->links() }}
-            </div>
+        {{ $produktSkany->links() }}
+    </div>
 
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="{{ asset('js/barcode-scanner.js') }}"></script>
