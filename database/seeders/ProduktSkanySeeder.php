@@ -14,58 +14,98 @@ class ProduktSkanySeeder extends Seeder
 {
     public function run(): void
     {
-        $regions = Region::all()->keyBy('code'); // ['magazyn'=>..., 'sklep'=>..., 'garmaz'=>..., 'piekarnia'=>...]
+        $regions = Region::all()->keyBy('code');
         $users = User::where('role', 'pracownik')->get();
-        $units = DB::table('units')->pluck('code', 'id'); // [1=>'szt', 2=>'kg', ...]
+        $units = DB::table('units')->pluck('code', 'id');
+        $allProducts = Product::all();
 
-        // Okres od stycznia 2019 do teraz
-        $period = CarbonPeriod::create('2019-01-01', now()->endOfMonth());
+        $period = CarbonPeriod::create('2025-01-01', '1 month', now()->endOfMonth());
+
+        $totalScans = 0;
+        $currentYear = null;
+        $yearScans = 0;
 
         foreach ($period as $month) {
-            foreach ($users as $user) {
-                $region = $user->region;
-                if (!$region) continue;
+            $monthScans = 0;
+            $batch = []; // tu zbieramy wszystkie rekordy do insertu
 
-                $products = Product::all();
+            foreach ($regions as $regionCode => $region) {
+                $regionUsers = $users->where('region_id', $region->id);
 
-                $scansCount = 0;
+                $activeCount = match($regionCode) {
+                    'garmaz', 'piekarnia' => rand(1, min(3, $regionUsers->count())),
+                    'sklep', 'magazyn'    => rand(3, min(6, $regionUsers->count())),
+                    default => 0
+                };
 
-                while ($scansCount < 100) { // każdy pracownik skanuje ~100 produktów w danym miesiącu
-                    foreach ($products as $product) {
-                        $unitCode = $units[$product->unit_id];
-                        $repeats = rand(1, 3); // produkt może wystąpić 1-3 razy z różnymi ilościami
+                if ($activeCount === 0) continue;
 
-                        for ($i = 0; $i < $repeats && $scansCount < 100; $i++) {
-                            // Ilość
-                            if (in_array($unitCode, ['szt', 'opak'])) {
-                                $quantity = rand(1, 20); // liczba całkowita
-                            } else { // kg, l
-                                $quantity = round(rand(1, 5000) / 100, 2); // decimal(15,2)
-                            }
+                $activeUsers = $regionUsers->random($activeCount);
 
-                            // Data skanu: 25-28 dzień wybranego miesiąca
-                            $day = rand(25, 28);
-                            $hour = rand(8, 18);
-                            $minute = rand(0, 59);
-                            $second = rand(0, 59);
-                            $scannedAt = Carbon::create($month->year, $month->month, $day, $hour, $minute, $second);
+                foreach ($activeUsers as $user) {
+                    $scansCount = 0;
+                    $productScans = [];
 
-                            DB::table('produkt_skany')->insert([
-                                'product_id' => $product->id,
-                                'user_id'    => $user->id,
-                                'region_id'  => $region->id,
-                                'quantity'   => $quantity,
-                                'scanned_at' => $scannedAt,
-                                'barcode'    => $product->barcodes()->inRandomOrder()->first()->barcode ?? null,
-                            ]);
+                    while ($scansCount < 100) {
+                        $product = $allProducts->random();
 
-                            $scansCount++;
+                        if (!isset($productScans[$product->id])) {
+                            $productScans[$product->id] = 0;
+                        }
+                        if ($productScans[$product->id] >= 3) {
+                            continue;
                         }
 
-                        if ($scansCount >= 100) break;
+                        $unitCode = $units[$product->unit_id];
+                        $quantity = in_array($unitCode, ['szt', 'opak'])
+                            ? (float) rand(1, 20)
+                            : (float) round(rand(1, 5000) / 100, 2);
+
+                        $day = rand(25, 28);
+                        $hour = rand(8, 18);
+                        $minute = rand(0, 59);
+                        $second = rand(0, 59);
+                        $scannedAt = Carbon::create($month->year, $month->month, $day, $hour, $minute, $second);
+
+                        $batch[] = [
+                            'product_id' => $product->id,
+                            'user_id'    => $user->id,
+                            'region_id'  => $region->id,
+                            'quantity'   => $quantity,
+                            'scanned_at' => $scannedAt,
+                            'barcode'    => $product->barcodes()->first()->barcode ?? null, // barcode z produktu
+                        ];
+
+                        $productScans[$product->id]++;
+                        $scansCount++;
+                        $monthScans++;
                     }
                 }
             }
+
+            if (!empty($batch)) {
+                foreach (array_chunk($batch, 300) as $chunk) {
+                    DB::table('produkt_skany')->insert($chunk);
+                }
+            }
+
+            // jeśli zmienił się rok, wyświetlamy sumę za poprzedni rok
+            if ($currentYear !== $month->year) {
+                if ($currentYear !== null) {
+                    $this->command->info("Rok {$currentYear} End. Added {$yearScans} skan.");
+                }
+                $currentYear = $month->year;
+                $yearScans = 0;
+            }
+
+            $yearScans += $monthScans;
+            $totalScans += $monthScans;
+
+            $this->command->info("Msc {$month->format('Y-m')} end. Gen {$monthScans} skan.");
         }
+
+        // Wyświetlenie sumy za ostatni rok
+        $this->command->info("Rok {$currentYear} end. Added {$yearScans} skan.");
+        $this->command->info("Seeder End. Added {$totalScans} skan.");
     }
 }
