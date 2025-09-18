@@ -14,14 +14,14 @@
         <div class="container mx-auto flex items-center justify-between px-4 py-3">
             @auth
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm text-emerald-400">Zalogowany jako:</span>
+                    <span class="text-sm text-emerald-500">Zalogowany jako:</span>
                     <span class="font-semibold">{{ auth()->user()->name }}</span>
                 </div>
             @endauth
 
             <div class="sm:hidden">
                 <button id="menu-toggle"
-                        class="text-slate-100 hover:text-emerald-400 focus:outline-none">
+                        class="text-slate-100 hover:text-emerald-500 focus:outline-none">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
                          viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -31,14 +31,14 @@
             </div>
 
             <div class="hidden sm:flex space-x-4">
-                <a href="{{ route('welcome') }}" class="px-4 py-2 rounded bg-green-900 hover:bg-green-700 text-white font-semibold transition">
+                <a href="{{ route('welcome') }}" class="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-800 text-white font-semibold transition">
                     Strona Główna
                 </a>
         
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                            class="px-4 py-2 rounded bg-red-800 hover:bg-red-600 text-white font-semibold transition">
+                            class="px-4 py-2 rounded bg-red-600 hover:bg-red-800 text-white font-semibold transition">
                         Wyloguj
                     </button>
                 </form>
@@ -46,14 +46,14 @@
         </div>
 
         <div id="mobile-menu" class="hidden sm:hidden px-4 pb-4 space-y-2">
-            <a href="{{ route('welcome') }}" class="block px-4 py-2 rounded bg-emerald-800 hover:bg-emerald-600 text-white font-semibold transition">
+            <a href="{{ route('welcome') }}" class="block px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-800 text-white font-semibold transition">
                 Strona Główna
             </a>
        
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
-                        class="w-full text-left px-4 py-2 rounded bg-red-800 hover:bg-red-600 text-white font-semibold transition">
+                        class="w-full text-left px-4 py-2 rounded bg-red-600 hover:bg-red-800 text-white font-semibold transition">
                     Wyloguj
                 </button>
             </form>
