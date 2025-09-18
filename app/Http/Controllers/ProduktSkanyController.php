@@ -10,17 +10,15 @@ use App\Models\Region;
 
 class ProduktSkanyController extends Controller
 {
-    // List all scans
     public function index()
     {
         $produktSkany = ProduktSkany::with(['product', 'user', 'region'])
                         ->orderBy('scanned_at', 'desc')
-                        ->get();
+                        ->paginate(50);
 
         return view('products.index', compact('produktSkany'));
     }
 
-    // Show form to create new scan
     public function create()
     {
         $products = Product::all();
@@ -30,7 +28,6 @@ class ProduktSkanyController extends Controller
         return view('products.create', compact('products', 'users', 'regions'));
     }
 
-    // Store new scan
     public function store(Request $request)
     {
         $request->validate([
@@ -50,12 +47,42 @@ class ProduktSkanyController extends Controller
             'scanned_at' => now(),
         ]);
 
-        return redirect()->route('products.index')->with('success', 'Skan zapisany!');
+        return redirect()->route('produkt_skany.index')->with('success', 'Skan zapisany!');
     }
 
-    // Optional: view a single scan
-    public function show(ProduktSkany $produktSkany)
+    // Edycja ilości
+    public function edit(ProduktSkany $produktSkany)
     {
-        return view('products.show', compact('produktSkany'));
+        return view('products.edit', compact('produktSkany'));
+    }
+
+    public function update(Request $request, ProduktSkany $produktSkany)
+{
+    $request->validate([
+        'quantity' => 'required|integer|min:1',
+    ]);
+
+    $produktSkany->update([
+        'quantity' => $request->quantity,
+    ]);
+
+    if ($request->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Ilość zaktualizowana!',
+            'quantity' => $produktSkany->quantity
+        ]);
+    }
+
+    return redirect()->route('produkt_skany.index')->with('success', 'Ilość zaktualizowana!');
+}
+
+
+    // Usuwanie wiersza
+    public function destroy(ProduktSkany $produktSkany)
+    {
+        $produktSkany->delete();
+
+        return redirect()->route('produkt_skany.index')->with('success', 'Skan usunięty!');
     }
 }

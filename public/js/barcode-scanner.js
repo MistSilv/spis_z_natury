@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         try {
-            const res = await fetch('/api/Barcode_check', {
+            const res = await fetch('/Barcode_check', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -43,12 +43,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (qty && !isNaN(qty) && parseFloat(qty) > 0) {
                 // zapisz do bazy
-                const saveRes = await fetch('/api/scan/save', {
+                const saveRes = await fetch('/scan/save', {
                     method: 'POST',
+                    credentials: 'same-origin', 
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'X-CSRF-TOKEN': token
+                        'X-CSRF-TOKEN': token 
                     },
                     body: JSON.stringify({
                         product_id: product.id,
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         barcode: product.barcode
                     })
                 });
+
 
                 const saveData = await saveRes.json();
 
@@ -114,4 +116,42 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('scan-result').innerText = "Scanning stopped.";
         }).catch(err => alert("Error stopping scanner: " + err));
     });
+
+
+    async function editQuantity(scanId, productName, currentQty) {
+    const newQty = prompt(`Podaj nową ilość dla produktu: ${productName}`, currentQty);
+    if (newQty === null) return; // użytkownik anulował
+    if (isNaN(newQty) || parseInt(newQty) < 1) {
+        alert("Nieprawidłowa ilość.");
+        return;
+    }
+
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const res = await fetch(`/produkt-skany/${scanId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': token
+            },
+            body: JSON.stringify({ quantity: parseInt(newQty) })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.message || "Błąd przy aktualizacji ilości.");
+        } else {
+            alert(`Ilość produktu ${productName} zaktualizowana do ${newQty}`);
+            // odświeżenie strony lub wiersza w tabeli
+            location.reload();
+        }
+
+    } catch (err) {
+        alert(err.message || "Błąd przy aktualizacji ilości.");
+    }
+}
 });
+

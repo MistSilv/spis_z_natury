@@ -19,6 +19,11 @@
                 class="bg-teal-700 hover:bg-teal-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
                 Produkty
             </a>
+
+            <a href="{{ route('produkt_skany.index') }}" 
+                class="bg-teal-700 hover:bg-teal-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
+                (ㆆ _ ㆆ)
+            </a>
             
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
