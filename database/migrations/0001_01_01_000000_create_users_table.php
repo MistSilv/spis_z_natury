@@ -100,6 +100,13 @@ return new class extends Migration
             $table->timestamp('failed_at')->useCurrent();
         });
 
+
+
+        //Tabele
+        //////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////
+
+
         Schema::create('units', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
@@ -138,7 +145,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('region_id')->constrained('regions');
-            $table->unsignedInteger('quantity')->default(1);
+            $table->decimal('quantity', 15, 2)->default(1);
             $table->timestamp('scanned_at')->useCurrent();
             $table->string('barcode', 13)->nullable();
 
@@ -165,7 +172,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->string('name');          // nazwa produktu
             $table->decimal('price', 15, 2); // cena produktu
-            $table->unsignedInteger('quantity')->default(1); // ilość
+            $table->decimal('quantity', 15, 2)->default(1);
             $table->string('unit');           // jednostka, np. "kg", "szt"
             $table->string('barcode', 13)->nullable();
             $table->timestamp('added_at')->useCurrent();
@@ -173,6 +180,8 @@ return new class extends Migration
             $table->index(['spis_id', 'region_id']);
             $table->index(['user_id', 'added_at']);
         });
+
+        
 
 
 
