@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProduktSkanyController;
 use App\Http\Controllers\BarcodeController;
+use App\Http\Controllers\SpisZNaturyController;
 
 // Przekierowanie ze strony głównej na /login
 Route::get('/', function () {
@@ -45,6 +46,8 @@ Route::delete('/produkt-skany/{produktSkany}', [ProduktSkanyController::class, '
 Route::post('/Barcode_check', [BarcodeController::class, 'check'])->middleware('auth');
 Route::post('/scan/save', [BarcodeController::class, 'save'])->middleware('auth');
 
+Route::resource('spisy', SpisZNaturyController::class);  
+Route::get('/spisy/{spis}/produkty', [SpisZNaturyController::class, 'showProdukty'])->name('spisy.produkty');
 
 
 

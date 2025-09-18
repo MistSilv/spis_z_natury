@@ -168,7 +168,6 @@ return new class extends Migration
         Schema::create('spis_produkty', function (Blueprint $table) {
             $table->id();
             $table->foreignId('spis_id')->constrained('spis_z_natury')->cascadeOnDelete();
-            $table->foreignId('region_id')->constrained('regions');
             $table->foreignId('user_id')->constrained('users');
             $table->string('name');          // nazwa produktu
             $table->decimal('price', 15, 2); // cena produktu
@@ -177,7 +176,7 @@ return new class extends Migration
             $table->string('barcode', 13)->nullable();
             $table->timestamp('added_at')->useCurrent();
 
-            $table->index(['spis_id', 'region_id']);
+            $table->index(['spis_id']);
             $table->index(['user_id', 'added_at']);
         });
 
