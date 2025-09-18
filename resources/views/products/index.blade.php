@@ -1,6 +1,19 @@
 <x-layout title="Lista Skanów Produktów">
     <h1 class="text-2xl font-bold mb-6">Lista Skanów Produktów</h1>
 
+    <div class="mb-6 flex gap-4 flex-wrap">
+        <button type="button" id="start-scan"
+                class="bg-green-900 text-white px-3 py-1 rounded shadow hover:bg-green-600 transition">
+            Start Scanning
+        </button>
+        <button type="button" id="stop-scan"
+                class="bg-red-900 text-white px-3 py-1 rounded shadow hover:bg-red-600 transition hidden">
+            Stop Scanning
+        </button>
+        <div id="reader" style="width: 300px; display:none;"></div>
+        <p id="scan-result" class="mt-2 text-sm text-gray-400"></p>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
             <thead class="bg-gray-100">
@@ -33,4 +46,6 @@
             </tbody>
         </table>
     </div>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="{{ asset('js/barcode-scanner.js') }}"></script>
 </x-layout>

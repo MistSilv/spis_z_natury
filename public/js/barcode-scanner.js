@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Handle scanning result
     async function onScanSuccess(decodedText) {
-        if (window.isProcessingScan) return; // blokada przed wielokrotnym wejściem
+        if (window.isProcessingScan) return;
         window.isProcessingScan = true;
 
         document.getElementById('scan-result').innerText = `Scanned: ${decodedText}`;
@@ -32,32 +32,50 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await res.json();
             if (!res.ok || !data.product) {
                 alert(data.message || "Produkt nie znaleziony");
-                window.isProcessingScan = false; // odblokuj skaner
+                window.isProcessingScan = false;
                 return;
             }
 
             const product = data.product;
-            const qty = prompt(`Enter quantity for product: ${product.name}`, "1");
+
+            // użytkownik wpisuje ilość
+            const qty = prompt(`Podaj ilość dla produktu: ${product.name}`, "1");
 
             if (qty && !isNaN(qty) && parseFloat(qty) > 0) {
-                addProductRow(
-                    product.id.toString(),
-                    product.name,
-                    parseFloat(qty),
-                    product.unit || '',
-                    product.price || 0
-                );
+                // zapisz do bazy
+                const saveRes = await fetch('/api/scan/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    },
+                    body: JSON.stringify({
+                        product_id: product.id,
+                        quantity: parseInt(qty),
+                        barcode: product.barcode
+                    })
+                });
+
+                const saveData = await saveRes.json();
+
+                if (!saveRes.ok) {
+                    alert(saveData.message || "Błąd zapisu skanu.");
+                } else {
+                    // dodaj do tabeli na froncie
+                    alert(`Zeskanowano: ${product.name}, Ilość: ${qty}`);
+                }
             } else {
-                alert("Invalid quantity.");
+                alert("Nieprawidłowa ilość.");
             }
 
         } catch (err) {
-            alert(err.message || "Error checking barcode.");
+            alert(err.message || "Błąd przy sprawdzaniu kodu.");
         } finally {
-            // zawsze odblokuj callback po zakończeniu prompt / alert
             window.isProcessingScan = false;
         }
     }
+
 
     // Start scanning
     startBtn.addEventListener('click', () => {
