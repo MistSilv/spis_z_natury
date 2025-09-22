@@ -56,7 +56,7 @@
                         oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
                 <button type="button" onclick="addEan()"
-                        class="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-500 text-gray-100 rounded transition">
+                        class="mt-2 px-3 py-1 bg-blue-800 hover:bg-blue-600 text-gray-100 rounded transition">
                     + Dodaj EAN
                 </button>
             </div>
@@ -65,11 +65,11 @@
             {{-- Zapisz --}}
             <div class="mt-6 flex gap-2">
                 <button type="submit"
-                        class="px-4 py-2 bg-green-600 hover:bg-green-500 text-gray-100 rounded shadow transition">
+                        class="px-4 py-2 bg-green-800 hover:bg-green-800 text-gray-100 rounded shadow transition">
                     Zapisz produkt
                 </button>
                 <a href="{{ route('products.index') }}"
-                   class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-100 rounded shadow transition">
+                   class="px-4 py-2 bg-gray-800 hover:bg-gray-600 text-gray-100 rounded shadow transition">
                    Anuluj
                 </a>
             </div>

@@ -5,14 +5,14 @@
 
         <div class="mb-6 flex gap-4 flex-wrap">
             <a href="{{ route('products.create') }}"
-               class="bg-blue-600 hover:bg-blue-500 text-gray-100 px-4 py-2 rounded-lg shadow transition">
+               class="bg-blue-800 hover:bg-blue-500 text-gray-100 px-4 py-2 rounded-lg shadow transition">
                + Dodaj produkt
             </a>
         </div>
 
-        <div class="overflow-x-auto rounded-lg shadow border border-slate-800">
-            <table class="min-w-full bg-slate-900 text-gray-200">
-                <thead class="bg-slate-800">
+        <div class="overflow-x-auto rounded-lg shadow border border-neutral-700">
+            <table class="min-w-full  text-gray-300">
+                <thead class="bg-neutral-900 text-sm text-white">
                     <tr>
                         <th class="px-4 py-2 text-left">Nazwa</th>
                         <th class="px-4 py-2 text-left">Cena</th>
@@ -21,9 +21,9 @@
                         <th class="px-4 py-2 text-left">Akcje</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-700">
+                <tbody class="divide-y divide-neutral-700">
                     @forelse($products as $product)
-                        <tr class="hover:bg-slate-800/70 transition">
+                        <tr class="even:bg-black hover:bg-neutral-800/70 transition">
                             <td class="px-4 py-2">{{ $product->name }}</td>
                             <td class="px-4 py-2">{{ $product->price }}</td>
                             <td class="px-4 py-2">{{ $product->unit->name ?? '-' }}</td>
