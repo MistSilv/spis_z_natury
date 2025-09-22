@@ -61,10 +61,10 @@
                 Produkty zeskanowane dla regionu {{ $spis->region->name }}
             </h2>
 
-            <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-slate-700 rounded-lg shadow-inner">
-                <table class="min-w-full text-left text-white border-collapse bg-slate-900">
-                    <thead class="sticky top-0 bg-slate-800 z-10">
-                        <tr class="border-b border-teal-600">
+            <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-neutral-700 rounded-lg shadow-inner">
+                <table class="min-w-full text-left text-gray-300 border-collapse">
+                    <thead class="sticky top-0 bg-neutral-900 text-sm text-white">
+                        <tr>
                             <th class="p-2">Produkt</th>
                             <th class="p-2">Cena</th>
                             <th class="p-2">Jednostka</th>
@@ -73,9 +73,9 @@
                             <th class="p-2">Data skanu</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-neutral-700">
                         @foreach($produkty as $produkt)
-                            <tr class="border-b border-teal-700 hover:bg-slate-800/50 transition-colors">
+                            <tr class="even:bg-black hover:bg-neutral-800/70 transition">
                                 <td class="p-2">{{ $produkt->product->name ?? 'Brak nazwy' }}</td>
                                 <td class="p-2">{{ $produkt->product->price ?? '-' }}</td>
                                 <td class="p-2">{{ $produkt->product->unit->name ?? '-' }}</td>
@@ -100,10 +100,10 @@
                 Produkty w tym spisie
             </h2>
 
-            <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-slate-700 rounded-lg shadow-inner">
-                <table class="min-w-full text-left text-white border-collapse bg-slate-900">
-                    <thead class="sticky top-0 bg-slate-800 z-10">
-                        <tr class="border-b border-teal-600">
+            <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-neutral-700 rounded-lg shadow-inner">
+                <table class="min-w-full text-left text-gray-300border-collapse">
+                    <thead class="sticky top-0 bg-neutral-900 text-sm text-white z-10">
+                        <tr>
                             <th class="p-2">Produkt</th>
                             <th class="p-2">Cena</th>
                             <th class="p-2">Jednostka</th>
@@ -112,9 +112,9 @@
                             <th class="p-2">Dodane przez</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-neutral-700">
                         @foreach($produktySpisu as $produkt)
-                            <tr class="border-b border-teal-700 hover:bg-slate-800/50 transition-colors">
+                            <tr class="even:bg-black hover:bg-neutral-800/70 transition">
                                 <td class="p-2">{{ $produkt->name }}</td>
                                 <td class="p-2">{{ $produkt->price }}</td>
                                 <td class="p-2">{{ $produkt->unit }}</td>
