@@ -14,7 +14,7 @@ class ProduktSkanyController extends Controller
     {
         $produktSkany = ProduktSkany::with(['product', 'user', 'region'])
                         ->orderBy('scanned_at', 'desc')
-                        ->paginate(50);
+                        ->paginate(100);
 
         return view('products.index', compact('produktSkany'));
     }

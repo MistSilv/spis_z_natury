@@ -12,7 +12,7 @@
         <h2 class="text-2xl font-bold mb-6 text-center text-teal-300 drop-shadow">Rejestracja</h2>
         
         @if($errors->any())
-            <div class="mb-4 bg-teal-600/10 text-teal-300 border border-teal-700/50 rounded p-3">
+            <div class="mb-4 bg-teal-600/10 text-teal-400 border border-teal-700/50 rounded p-3">
                 {{ $errors->first() }}
             </div>
         @endif
@@ -20,13 +20,13 @@
         <form method="POST" action="{{ route('register') }}" class="space-y-5">
             @csrf
             <div>
-                <label class="block text-teal-300 mb-1" for="name">Imię</label>
+                <label class="block text-teal-400 mb-1" for="name">Imię</label>
                 <input type="text" name="name" id="name" required 
                     class="w-full px-4 py-2 bg-slate-900 text-slate-100 border border-teal-700/50 rounded focus:outline-none focus:ring-2 focus:ring-teal-600/50 placeholder:text-slate-400" />
             </div>
 
             <div>
-                <label class="block text-teal-300 mb-1" for="email">Email</label>
+                <label class="block text-teal-400 mb-1" for="email">Email</label>
                 <input type="email" name="email" id="email" required 
                     class="w-full px-4 py-2 bg-slate-900 text-slate-100 border border-teal-700/50 rounded focus:outline-none focus:ring-2 focus:ring-teal-600/50 placeholder:text-slate-400" />
                 @error('email')
@@ -35,19 +35,19 @@
             </div>
 
             <div>
-                <label class="block text-teal-300 mb-1" for="password">Hasło</label>
+                <label class="block text-teal-400 mb-1" for="password">Hasło</label>
                 <input type="password" name="password" id="password" required 
                     class="w-full px-4 py-2 bg-slate-900 text-slate-100 border border-teal-700/50 rounded focus:outline-none focus:ring-2 focus:ring-teal-600/50 placeholder:text-slate-400" />
             </div>
 
             <div>
-                <label class="block text-teal-300 mb-1" for="password_confirmation">Potwierdź hasło</label>
+                <label class="block text-teal-400 mb-1" for="password_confirmation">Potwierdź hasło</label>
                 <input type="password" name="password_confirmation" id="password_confirmation" required 
                     class="w-full px-4 py-2 bg-slate-900 text-slate-100 border border-teal-700/50 rounded focus:outline-none focus:ring-2 focus:ring-teal-600/50 placeholder:text-slate-400" />
             </div>
 
             <div>
-                <label class="block text-teal-300 mb-1" for="role">Rola</label>
+                <label class="block text-teal-400 mb-1" for="role">Rola</label>
                 <select name="role" id="role" required 
                     class="w-full px-4 py-2 bg-slate-900 text-slate-100 border border-teal-700/50 rounded focus:outline-none focus:ring-2 focus:ring-teal-600/50">
                     @foreach($roles as $role)
@@ -57,7 +57,7 @@
             </div>
 
             <div>
-                <label class="block text-teal-300 mb-1" for="region_id">Region</label>
+                <label class="block text-teal-400 mb-1" for="region_id">Region</label>
                 <select name="region_id" id="region_id" 
                     class="w-full px-4 py-2 bg-slate-900 text-slate-100 border border-teal-700/50 rounded focus:outline-none focus:ring-2 focus:ring-teal-600/50">
                     <option value="">Brak przypisanego regionu</option>
@@ -68,7 +68,7 @@
             </div>
 
             <button type="submit" 
-                class="w-full bg-teal-700 hover:bg-teal-600 text-slate-100 py-2 rounded font-semibold shadow-md border border-teal-800/50 transition">
+                class="w-full bg-teal-800 hover:bg-teal-600 text-slate-100 py-2 rounded font-semibold shadow-md border border-teal-800/50 transition">
                 Zarejestruj się
             </button>
         </form>

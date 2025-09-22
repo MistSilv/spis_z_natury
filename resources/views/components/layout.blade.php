@@ -5,6 +5,7 @@
     <title>{{ $title ?? 'Aplikacja Inwentaryzacyjna' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-black text-slate-100 min-h-screen">
@@ -34,14 +35,14 @@
             <!-- Desktop menu -->
             <div class="hidden sm:flex space-x-4">
                 <a href="{{ route('welcome') }}" 
-                   class="px-4 py-2 rounded bg-teal-700 hover:bg-teal-600 text-slate-100 font-semibold border border-teal-800/50 shadow-sm transition">
+                   class="px-4 py-2 rounded bg-teal-800 hover:bg-teal-600 text-slate-100 font-semibold border border-teal-800/50 shadow-sm transition">
                     Strona Główna
                 </a>
         
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                            class="px-4 py-2 rounded bg-red-700 hover:bg-red-600 text-slate-100 font-semibold border border-red-800/50 shadow-sm transition">
+                            class="px-4 py-2 rounded bg-red-800 hover:bg-red-600 text-slate-100 font-semibold border border-red-800/50 shadow-sm transition">
                         Wyloguj
                     </button>
                 </form>
@@ -51,14 +52,14 @@
         <!-- Mobile menu -->
         <div id="mobile-menu" class="hidden sm:hidden px-4 pb-4 space-y-2">
             <a href="{{ route('welcome') }}" 
-               class="block px-4 py-2 rounded bg-teal-700 hover:bg-teal-600 text-slate-100 font-semibold border border-teal-800/50 shadow-sm transition">
+               class="block px-4 py-2 rounded bg-teal-800 hover:bg-teal-600 text-slate-100 font-semibold border border-teal-800/50 shadow-sm transition">
                 Strona Główna
             </a>
        
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
-                        class="w-full text-left px-4 py-2 rounded bg-red-700 hover:bg-red-600 text-slate-100 font-semibold border border-red-800/50 shadow-sm transition">
+                        class="w-full text-left px-4 py-2 rounded bg-red-800 hover:bg-red-600 text-slate-100 font-semibold border border-red-800/50 shadow-sm transition">
                     Wyloguj
                 </button>
             </form>

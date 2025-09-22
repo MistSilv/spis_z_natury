@@ -36,34 +36,42 @@ Route::get('/produkt-skany/create', [ProduktSkanyController::class, 'create'])->
 Route::post('/produkt-skany', [ProduktSkanyController::class, 'store'])->name('produkt_skany.store');
 Route::get('/produkt-skany/{produktSkany}', [ProduktSkanyController::class, 'show'])->name('produkt_skany.show');
 
-// ✅ Dodajemy edycję ilości
 Route::get('/produkt-skany/{produktSkany}/edit', [ProduktSkanyController::class, 'edit'])->name('produkt_skany.edit');
 Route::put('/produkt-skany/{produktSkany}', [ProduktSkanyController::class, 'update'])->name('produkt_skany.update');
 
-// ✅ Dodajemy możliwość usuwania
 Route::delete('/produkt-skany/{produktSkany}', [ProduktSkanyController::class, 'destroy'])->name('produkt_skany.destroy');
 
 Route::post('/Barcode_check', [BarcodeController::class, 'check'])->middleware('auth');
 Route::post('/scan/save', [BarcodeController::class, 'save'])->middleware('auth');
 
+
+Route::get('/spisy/archiwum', [SpisZNaturyController::class, 'archiwum'])
+     ->name('spisy.archiwum')
+     ->middleware('auth');
+
 Route::resource('spisy', SpisZNaturyController::class);  
 Route::get('/spisy/{spis}/produkty', [SpisZNaturyController::class, 'showProdukty'])->name('spisy.produkty');
 
+Route::post('/spisy/{spis}/produkty/add', [App\Http\Controllers\SpisZNaturyController::class, 'addProdukty'])
+    ->name('spisy.produkty.add');
+
+Route::get('/spisy/{spis}/produkty/spis', [App\Http\Controllers\SpisZNaturyController::class, 'showSpisProdukty'])
+    ->name('spisy.spis_produkty');
+
+Route::get('spisy/{spis}/podsumowanie', [SpisZNaturyController::class, 'podsumowanieSpisu'])
+    ->name('spisy.podsumowanie');
+
+Route::post('spisy/{spis}/produkt/{produkt}/update', [SpisZNaturyController::class, 'updateProduktSpisu'])
+    ->name('spisy.produkty.update');
+
+Route::delete('spisy/{spis}/produkt/{produkt}/delete', [SpisZNaturyController::class, 'deleteProduktSpisu'])
+    ->name('spisy.produkty.delete');
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-    // idk do wyjebania kiedyś to na dole wszystko
 
 
 

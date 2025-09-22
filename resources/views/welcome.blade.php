@@ -10,25 +10,25 @@
 <body class="bg-black flex items-center justify-center min-h-screen">
     <div class="w-full max-w-2xl bg-gradient-to-br from-black via-slate-950 to-slate-900 rounded-lg shadow-lg p-8 border border-teal-700/50 text-center">
         
-        <h1 class="text-2xl font-bold mb-6 text-teal-300 drop-shadow">
+        <h1 class="text-2xl font-bold mb-6 text-teal-400 drop-shadow">
             Witaj, {{ Auth::user()->name }}
         </h1>
 
         <div class="flex justify-center gap-6">
             <a href="{{ route('produkt_skany.index') }}" 
-                class="bg-teal-700 hover:bg-teal-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
+                class="bg-teal-800 hover:bg-teal-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
                 Produkty
             </a>
 
             <a href="{{ route('spisy.index') }}" 
-                class="bg-teal-700 hover:bg-teal-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
+                class="bg-teal-800 hover:bg-teal-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
                 (ㆆ _ ㆆ)
             </a>
             
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
-                    class="bg-red-700 hover:bg-red-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-red-800/50 transition">
+                    class="bg-red-800 hover:bg-red-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-red-800/50 transition">
                     Wyloguj
                 </button>
             </form>

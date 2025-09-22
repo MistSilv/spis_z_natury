@@ -1,34 +1,133 @@
 <x-layout title="Produkty dla regionu {{ $spis->region->name }}">
-    <div class="max-w-4xl mx-auto p-6 bg-slate-900 rounded-xl shadow-lg border border-teal-700/50">
-        <h1 class="text-2xl font-bold text-teal-300 mb-4">Produkty dla regionu {{ $spis->region->name }}</h1>
+    <div class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-teal-700/50">
 
         @if(session('success'))
-            <p class="mb-4 text-green-400">{{ session('success') }}</p>
+            <p class="mb-6 text-green-400 font-semibold">{{ session('success') }}</p>
         @endif
 
-        <table class="w-full text-left text-white">
-            <thead>
-                <tr class="border-b border-teal-700">
-                    <th class="p-2">Produkt</th>
-                    <th class="p-2">Cena</th>
-                    <th class="p-2">Jednostka</th>
-                    <th class="p-2">Ilość</th>
-                    <th class="p-2">Kod kreskowy</th>
-                    <th class="p-2">Data skanu</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($produkty as $produkt)
-                    <tr class="border-b border-teal-800">
-                        <td class="p-2">{{ $produkt->product->name ?? 'Brak nazwy' }}</td>
-                        <td class="p-2">{{ $produkt->product->price ?? '-' }}</td>
-                        <td class="p-2">{{ $produkt->product->unit->name ?? '-' }}</td>
-                        <td class="p-2">{{ $produkt->quantity }}</td>
-                        <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
-                        <td class="p-2">{{ $produkt->scanned_at }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <!-- Formularz filtrowania -->
+        <form method="GET" action="{{ route('spisy.produkty', $spis->id) }}" class="mb-6 flex gap-4 items-end flex-wrap">
+            <div>
+                <label for="date_from" class="block text-teal-300 font-medium">Data od</label>
+                <input type="date" id="date_from" name="date_from" 
+                       value="{{ request('date_from') }}" 
+                       class="p-2 rounded bg-slate-800 text-white border border-teal-600">
+            </div>
+
+            <div>
+                <label for="date_to" class="block text-teal-300 font-medium">Data do</label>
+                <input type="date" id="date_to" name="date_to" 
+                       value="{{ request('date_to') }}" 
+                       class="p-2 rounded bg-slate-800 text-white border border-teal-600">
+            </div>
+
+            <button type="submit" 
+                    class="px-4 py-2 bg-teal-800 hover:bg-teal-600 rounded text-white font-bold shadow-md">
+                Filtruj
+            </button>
+
+            <a href="{{ route('spisy.produkty', $spis->id) }}" 
+               class="px-4 py-2 bg-slate-800 hover:bg-slate-600 rounded text-white font-bold shadow-md">
+                Wyczyść
+            </a>
+        </form>
+
+        <!-- Przycisk dodania wyfiltrowanych -->
+        <form method="POST" action="{{ route('spisy.produkty.add', $spis->id) }}" class="mb-8">
+            @csrf
+            <input type="hidden" name="date_from" value="{{ request('date_from') }}">
+            <input type="hidden" name="date_to" value="{{ request('date_to') }}">
+            <button type="submit" 
+                    class="px-4 py-2 bg-teal-800 hover:bg-teal-600 rounded text-white font-bold shadow-md">
+                ⊂(◉‿◉)つ Dodaj wyfiltrowane produkty do spisu
+            </button>
+        </form>
+
+        <!-- ================== TABELKA 1: produkty zeskanowane ================== -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-teal-400 mb-2 border-b border-teal-500 pb-1 ">
+                Produkty zeskanowane dla regionu {{ $spis->region->name }}
+            </h2>
+
+            <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-slate-700 rounded-lg shadow-inner">
+                <table class="min-w-full text-left text-white border-collapse bg-slate-900">
+                    <thead class="sticky top-0 bg-slate-800 z-10">
+                        <tr class="border-b border-teal-600">
+                            <th class="p-2">Produkt</th>
+                            <th class="p-2">Cena</th>
+                            <th class="p-2">Jednostka</th>
+                            <th class="p-2">Ilość</th>
+                            <th class="p-2">Kod kreskowy</th>
+                            <th class="p-2">Data skanu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($produkty as $produkt)
+                            <tr class="border-b border-teal-700 hover:bg-slate-800/50 transition-colors">
+                                <td class="p-2">{{ $produkt->product->name ?? 'Brak nazwy' }}</td>
+                                <td class="p-2">{{ $produkt->product->price ?? '-' }}</td>
+                                <td class="p-2">{{ $produkt->product->unit->name ?? '-' }}</td>
+                                <td class="p-2">{{ $produkt->quantity }}</td>
+                                <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
+                                <td class="p-2">{{ $produkt->scanned_at }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginacja dla tabeli 1 -->
+            <div class="mt-2">
+                {{ $produkty->links() }}
+            </div>
+        </div>
+
+        <!-- ================== TABELKA 2: produkty dodane do spisu ================== -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-teal-400 mb-2 border-b border-teal-500 pb-1">
+                Produkty w tym spisie
+            </h2>
+
+            <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-slate-700 rounded-lg shadow-inner">
+                <table class="min-w-full text-left text-white border-collapse bg-slate-900">
+                    <thead class="sticky top-0 bg-slate-800 z-10">
+                        <tr class="border-b border-teal-600">
+                            <th class="p-2">Produkt</th>
+                            <th class="p-2">Cena</th>
+                            <th class="p-2">Jednostka</th>
+                            <th class="p-2">Ilość</th>
+                            <th class="p-2">Kod kreskowy</th>
+                            <th class="p-2">Dodane przez</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($produktySpisu as $produkt)
+                            <tr class="border-b border-teal-700 hover:bg-slate-800/50 transition-colors">
+                                <td class="p-2">{{ $produkt->name }}</td>
+                                <td class="p-2">{{ $produkt->price }}</td>
+                                <td class="p-2">{{ $produkt->unit }}</td>
+                                <td class="p-2">{{ $produkt->quantity }}</td>
+                                <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
+                                <td class="p-2">{{ $produkt->user->name ?? '-' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginacja dla tabeli 2 -->
+            <div class="mt-2">
+                {{ $produktySpisu->links() }}
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <a href="{{ route('spisy.podsumowanie', $spis->id) }}" 
+            class="px-6 py-3 bg-teal-800 hover:bg-teal-600 text-white font-bold rounded shadow-md transition-colors">
+                ヽ༼ ຈل͜ຈ༼ ▀̿̿Ĺ̯̿̿▀̿ ̿༽Ɵ͆ل͜Ɵ͆ ༽ﾉ
+            </a>
+        </div>
+
+
     </div>
 </x-layout>
