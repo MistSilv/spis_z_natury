@@ -2,63 +2,113 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Models\Unit;
+use App\Models\Barcode;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
     /**
-     * Display a listing of products.
+     * Lista produktów
      */
     public function index()
     {
-        return response()->json(['message' => 'ProductController index']);
+        $products = Product::with('unit', 'barcodes')->orderByDesc('id')->paginate(100);
+        return view('products.list', compact('products'));
     }
 
     /**
-     * Show the form for creating a new product.
+     * Formularz dodania produktu
      */
     public function create()
     {
-        return response()->json(['message' => 'ProductController create']);
+        $units = Unit::all();
+        return view('products.create', compact('units'));
     }
 
     /**
-     * Store a newly created product.
+     * Zapis nowego produktu
      */
     public function store(Request $request)
     {
-        return response()->json(['message' => 'ProductController store']);
+        $validated = $request->validate([
+            'name'       => 'required|string|max:255',
+            'price'      => 'nullable|numeric|min:0',
+            'unit_id'    => 'required|exists:units,id',
+            'id_abaco'   => 'nullable|string|max:255',
+            'barcodes.*' => 'nullable|string|max:13'
+        ]);
+
+        $product = Product::create($validated);
+
+        if ($request->filled('barcodes')) {
+            foreach ($request->barcodes as $barcode) {
+                if ($barcode) {
+                    Barcode::create([
+                        'product_id' => $product->id,
+                        'barcode'    => $barcode,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('products.index')->with('success', 'Produkt został dodany.');
     }
 
     /**
-     * Display the specified product.
+     * Pokaż produkt
      */
-    public function show($id)
+    public function show(Product $product)
     {
-        return response()->json(['message' => "ProductController show {$id}"]);
+        $product->load('unit', 'barcodes');
+        return view('products.show', compact('product'));
     }
 
     /**
-     * Show the form for editing the specified product.
+     * Formularz edycji produktu
      */
-    public function edit($id)
+    public function edit(Product $product)
     {
-        return response()->json(['message' => "ProductController edit {$id}"]);
+        $units = Unit::all();
+        $product->load('barcodes');
+        return view('products.edit', compact('product', 'units'));
     }
 
     /**
-     * Update the specified product.
+     * Aktualizacja produktu
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Product $product)
     {
-        return response()->json(['message' => "ProductController update {$id}"]);
+        $validated = $request->validate([
+            'name'       => 'required|string|max:255',
+            'price'      => 'nullable|numeric|min:0',
+            'unit_id'    => 'required|exists:units,id',
+            'id_abaco'   => 'nullable|string|max:255',
+            'barcodes.*' => 'nullable|string|max:13'
+        ]);
+
+        $product->update($validated);
+
+        // odśwież kody EAN
+        $product->barcodes()->delete();
+        if ($request->filled('barcodes')) {
+            foreach ($request->barcodes as $barcode) {
+                if ($barcode) {
+                    $product->barcodes()->create(['barcode' => $barcode]);
+                }
+            }
+        }
+
+        return redirect()->route('products.index')->with('success', 'Produkt zaktualizowany.');
     }
 
     /**
-     * Remove the specified product.
+     * Usuń produkt
      */
-    public function destroy($id)
+    public function destroy(Product $product)
     {
-        return response()->json(['message' => "ProductController destroy {$id}"]);
+        $product->delete();
+        return redirect()->route('products.index')->with('success', 'Produkt usunięty.');
     }
 }

@@ -15,15 +15,20 @@
         </h1>
 
         <div class="flex justify-center gap-6">
-            <a href="{{ route('produkt_skany.index') }}" 
+            <button onclick="window.location='{{ route('produkt_skany.index') }}'"
                 class="bg-teal-800 hover:bg-teal-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
-                Produkty
-            </a>
+                Produkty 📝
+            </button>
 
-            <a href="{{ route('spisy.index') }}" 
+            <button onclick="window.location='{{ route('spisy.index') }}'"
                 class="bg-teal-800 hover:bg-teal-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
                 (ㆆ _ ㆆ)
-            </a>
+            </button>
+
+            <button onclick="window.location='{{ route('products.index') }}'"
+                class="bg-teal-800 hover:bg-teal-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
+                ( •̀ ω •́ )
+            </button>
             
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

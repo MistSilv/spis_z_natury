@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProduktSkanyController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\SpisZNaturyController;
+use App\Http\Controllers\ProductController;
 
 // Przekierowanie ze strony głównej na /login
 Route::get('/', function () {
@@ -70,6 +71,20 @@ Route::delete('spisy/{spis}/produkt/{produkt}/delete', [SpisZNaturyController::c
 
 
 
+// lista produktów
+Route::get('/product-list', [ProductController::class, 'index'])->name('products.index');
+
+// formularz dodania
+Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+
+// zapis nowego produktu
+Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+
+// formularz edycji
+Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+
+// aktualizacja produktu
+Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
 
 
 
