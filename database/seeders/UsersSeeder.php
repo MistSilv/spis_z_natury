@@ -47,7 +47,7 @@ class UsersSeeder extends Seeder
         $counter = 1;
         foreach ($regionAssignments as $code => $count) {
             for ($i = 1; $i <= $count; $i++) {
-                $emailDomain = "{$emailsCounter[$code]}.{$code}.com";
+                $emailDomain = "{$emailsCounter[$code]}@{$code}.com";
                 $users[] = [
                     'name' => "Pracownik {$counter} - {$code}",
                     'email' => $emailDomain,
