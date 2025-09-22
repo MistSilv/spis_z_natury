@@ -17,33 +17,42 @@
         <p id="scan-result" class="mt-2 text-sm text-gray-400"></p>
     </div>
 
-    <div class="overflow-x-auto rounded-lg shadow border border-slate-800">
-        <table id="products-table" class="min-w-full bg-slate-900 text-gray-200">
-            <thead class="bg-slate-800">
+     <form method="GET" class="flex items-center gap-2 mb-4">
+        <label for="perPage" class="text-gray-200">Rekordów na stronę:</label>
+        <select name="perPage" id="perPage" onchange="this.form.submit()" class="border rounded px-2 py-1 bg-neutral-800 text-gray-200 border-neutral-700">
+            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+            <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+        </select>
+    </form>
+
+    <div class="overflow-hidden w-full overflow-x-auto rounded-sm border border-neutral-700">
+        <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-neutral-900 text-sm text-white">
                 <tr>
-                    <th class="px-4 py-2 text-left">ID</th>
-                    <th class="px-4 py-2 text-left">Produkt</th>
-                    <th class="px-4 py-2 text-left">Ilość</th>
-                    <th class="px-4 py-2 text-left">Kod EAN</th>
-                    <th class="px-4 py-2 text-left">Data skanu</th>
-                    <th class="px-4 py-2 text-left">Akcje</th>
+                    <th scope="col" class="p-4">ID</th>
+                    <th scope="col" class="p-4">Produkt</th>
+                    <th scope="col" class="p-4">Ilość</th>
+                    <th scope="col" class="p-4">Kod EAN</th>
+                    <th scope="col" class="p-4">Data skanu</th>
+                    <th scope="col" class="p-4">Akcje</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-700">
+            <tbody class="divide-y divide-neutral-700">
                 @forelse ($produktSkany as $skan)
-                <tr class="hover:bg-slate-800/70 transition">
-                    <td class="px-4 py-2">{{ $skan->id }}</td>
-                    <td class="px-4 py-2">{{ $skan->product->name }}</td>
-                    <td class="px-4 py-2">{{ $skan->quantity }}</td>
-                    <td class="px-4 py-2">{{ $skan->barcode ?? '-' }}</td>
-                    <td class="px-4 py-2">{{ $skan->scanned_at->format('Y-m-d H:i') }}</td>
-                    <td class="px-4 py-2 flex gap-2">
+                <tr class="even:bg-black hover:bg-neutral-800/70 transition">
+                    <td class="p-4">{{ $skan->id }}</td>
+                    <td class="p-4">{{ $skan->product->name }}</td>
+                    <td class="p-4">{{ $skan->quantity }}</td>
+                    <td class="p-4">{{ $skan->barcode ?? '-' }}</td>
+                    <td class="p-4">{{ $skan->scanned_at->format('Y-m-d H:i') }}</td>
+                    <td class="p-4 flex gap-2">
                        <button 
                             onclick="editQuantity({{ $skan->id }}, {{ Js::from($skan->product->name) }}, {{ $skan->quantity }})"
                             class="bg-teal-800 hover:bg-teal-600 text-slate-100 px-3 py-1 rounded shadow transition">
                             Edytuj
                         </button>
-
 
                         <form method="POST" action="{{ route('produkt_skany.destroy', $skan) }}" onsubmit="return confirm('Na pewno usunąć?');">
                             @csrf
@@ -57,7 +66,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td class="px-4 py-2 text-center text-gray-500" colspan="6">Brak zeskanowanych produktów</td>
+                    <td class="p-4 text-center text-gray-500" colspan="6">Brak zeskanowanych produktów</td>
                 </tr>
                 @endforelse
             </tbody>

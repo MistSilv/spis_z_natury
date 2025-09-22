@@ -1,0 +1,69 @@
+/* Główne okno */
+.daterangepicker {
+  background: #111;
+  color: #e5e5e5;
+  border: 1px solid #333;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+}
+
+/* Lewy panel z presetami */
+.daterangepicker .ranges {
+  background: #1a1a1a;
+  border-right: 1px solid #333;
+}
+.daterangepicker .ranges ul li {
+  color: #ccc;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.daterangepicker .ranges ul li.active,
+.daterangepicker .ranges ul li:hover {
+  background: #333;
+  color: #fff;
+}
+
+/* Kalendarze */
+.daterangepicker .calendar-table {
+  background: transparent;
+}
+.daterangepicker .calendar-table th,
+.daterangepicker .calendar-table td {
+  color: #ddd;
+}
+.daterangepicker .calendar-table td.off {
+  color: #555;
+}
+.daterangepicker .calendar-table td.active,
+.daterangepicker .calendar-table td.active:hover {
+  background: #444;
+  color: #fff;
+}
+.daterangepicker .calendar-table td.in-range {
+  background: #222;
+  color: #eee;
+}
+.daterangepicker .calendar-table td:hover {
+  background: #333;
+  color: #fff;
+}
+
+/* Przyciski Apply/Cancel */
+.daterangepicker .drp-buttons {
+  background: #111;
+  border-top: 1px solid #333;
+}
+.daterangepicker .drp-buttons .applyBtn {
+  background: #444 !important;
+  color: #fff !important;
+  border: none;
+}
+.daterangepicker .drp-buttons .applyBtn:hover {
+  background: #666 !important;
+}
+.daterangepicker .drp-buttons .cancelBtn {
+  color: #bbb;
+  background: transparent;
+}
+.daterangepicker .drp-buttons .cancelBtn:hover {
+  color: #fff;
+}

@@ -10,14 +10,17 @@ use App\Models\Region;
 
 class ProduktSkanyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = $request->get('perPage', 25); 
         $produktSkany = ProduktSkany::with(['product', 'user', 'region'])
-                        ->orderBy('scanned_at', 'desc')
-                        ->paginate(100);
+            ->orderBy('scanned_at', 'desc')
+            ->paginate($perPage)
+            ->withQueryString(); 
 
-        return view('products.index', compact('produktSkany'));
+        return view('products.index', compact('produktSkany', 'perPage'));
     }
+
 
     public function create()
     {
@@ -78,11 +81,18 @@ class ProduktSkanyController extends Controller
 }
 
 
-    // Usuwanie wiersza
-    public function destroy(ProduktSkany $produktSkany)
+    public function destroy(Request $request, ProduktSkany $produktSkany)
     {
         $produktSkany->delete();
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Skan usunięty!'
+            ]);
+        }
+
         return redirect()->route('produkt_skany.index')->with('success', 'Skan usunięty!');
     }
+
 }
