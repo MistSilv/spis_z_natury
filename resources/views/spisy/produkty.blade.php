@@ -2,16 +2,16 @@
     {{-- Daterangepicker CSS (CDN) --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
-    <div class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-teal-700/50">
+    <div class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50">
 
         @if(session('success'))
-            <p class="mb-6 text-green-400 font-semibold">{{ session('success') }}</p>
+            <p class="mb-6 text-green-800 font-semibold">{{ session('success') }}</p>
         @endif
 
         <!-- Formularz filtrowania -->
         <form method="GET" action="{{ route('spisy.produkty', $spis->id) }}" class="mb-6 flex gap-4 items-end flex-wrap" id="filterForm">
             <div>
-                <label class="block text-teal-300 font-medium">Zakres dat</label>
+                <label class="block text-sky-700 font-medium">Zakres dat</label>
 
                 <div class="input-with-icon">
                     <span class="icon">📅</span>
@@ -20,7 +20,7 @@
                     <input type="text" id="daterange"
                         data-server-from="{{ request('date_from') }}"
                         data-server-to="{{ request('date_to') }}"
-                        class="p-2 rounded bg-slate-800 text-white border border-teal-600 cursor-pointer"
+                        class="p-2 rounded bg-slate-800 text-white border border-cyan-600 cursor-pointer"
                         autocomplete="off"
                         value="{{ request('date_from') && request('date_to') ? \Carbon\Carbon::parse(request('date_from'))->format('m/d/Y').' - '. \Carbon\Carbon::parse(request('date_to'))->format('m/d/Y') : '' }}">
 
@@ -32,7 +32,7 @@
             </div>
 
             <button type="submit"
-                    class="px-4 py-2 bg-teal-800 hover:bg-teal-600 rounded text-white font-bold shadow-md">
+                    class="px-4 py-2 bg-sky-800 hover:bg-sky-600 rounded text-white font-bold shadow-md">
                 Filtruj
             </button>
 
@@ -50,14 +50,14 @@
             <input type="hidden" name="date_to"   class="date-to"   value="{{ request('date_to') }}">
 
             <button type="submit"
-                    class="px-4 py-2 bg-teal-800 hover:bg-teal-600 rounded text-white font-bold shadow-md">
+                    class="px-4 py-2 bg-sky-800 hover:bg-sky-600 rounded text-white font-bold shadow-md">
                 ⊂(◉‿◉)つ Dodaj wyfiltrowane produkty do spisu
             </button>
         </form>
 
         <!-- ================== TABELKA 1: produkty zeskanowane ================== -->
         <div class="mb-8">
-            <h2 class="text-xl font-bold text-teal-400 mb-2 border-b border-teal-500 pb-1 ">
+            <h2 class="text-xl font-bold text-sky-700 mb-2 border-b border-cyan-500 pb-1 ">
                 Produkty zeskanowane dla regionu {{ $spis->region->name }}
             </h2>
 
@@ -96,7 +96,7 @@
 
         <!-- ================== TABELKA 2: produkty dodane do spisu ================== -->
         <div class="mb-8">
-            <h2 class="text-xl font-bold text-teal-400 mb-2 border-b border-teal-500 pb-1">
+            <h2 class="text-xl font-bold text-sky-700 mb-2 border-b border-cyan-500 pb-1 ">
                 Produkty w tym spisie
             </h2>
 
@@ -135,7 +135,7 @@
 
         <div class="mt-6">
             <a href="{{ route('spisy.podsumowanie', $spis->id) }}"
-               class="px-6 py-3 bg-teal-800 hover:bg-teal-600 text-white font-bold rounded shadow-md transition-colors">
+               class="px-6 py-3 bg-sky-800 hover:bg-sky-600 text-white font-bold rounded shadow-md transition-colors">
                 ヽ༼ ຈل͜ຈ༼ ▀̿̿Ĺ̯̿̿▀̿ ̿༽Ɵ͆ل͜Ɵ͆ ༽ﾉ
             </a>
         </div>

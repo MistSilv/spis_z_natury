@@ -1,6 +1,6 @@
 <x-layout title="Tworzenie spisu">
-    <div class="max-w-xl mx-auto bg-slate-900 p-6 rounded-xl shadow-lg border border-teal-700/50">
-        <h1 class="text-2xl font-bold text-teal-400 mb-4">Nowy spis</h1>
+    <div class="max-w-xl mx-auto bg-slate-900 p-6 rounded-xl shadow-lg border border-cyan-700/50">
+        <h1 class="text-2xl font-bold text-sky-700 mb-4">Nowy spis</h1>
 
         <form action="{{ route('spisy.store') }}" method="POST">
             @csrf
@@ -20,7 +20,7 @@
                 @endforeach
             </select>
 
-            <button type="submit" class="bg-teal-800 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded">
+            <button type="submit" class="bg-sky-800 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded">
                 Utwórz spis
             </button>
         </form

@@ -10,9 +10,9 @@
             newQty: 0,
             produktId: null
         }"
-         class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-teal-700/50">
+         class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50">
 
-        <h1 class="text-2xl font-bold text-teal-400 mb-6">
+        <h1 class="text-2xl font-bold text-sky-700 mb-6">
             Podsumowanie spisu: {{ $spis->name }}
         </h1>
 
@@ -74,7 +74,7 @@
 
                             <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
                             <td class="p-2">{{ $produkt->user->name ?? '-' }}</td>
-                            <td class="p-2 font-semibold text-emerald-400">{{ number_format($produkt->price * $produkt->quantity, 2) }}</td>
+                            <td class="p-2 font-semibold text-sky-700">{{ number_format($produkt->price * $produkt->quantity, 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -128,10 +128,10 @@
 
         <!-- Podsumowanie -->
         <div class="mt-6 text-left">
-            <p class="text-lg text-teal-400 font-medium">
+            <p class="text-lg text-sky-700 font-medium">
                 Łącznie pozycji w spisie: <span class="text-white font-bold">{{ $totalItems }}</span>
             </p>
-            <p class="text-lg font-bold text-teal-400 mt-1">
+            <p class="text-lg font-bold text-sky-700 mt-1">
                 Łączna wartość spisu: <span class="text-white">{{ number_format($totalValue, 2) }}</span>
             </p>
         </div>

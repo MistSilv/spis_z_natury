@@ -1,7 +1,7 @@
 {{-- resources/views/products/edit.blade.php --}}
 <x-layout title="Edytuj Produkt">
-    <div class="max-w-3xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-teal-700/50">
-        <h1 class="text-2xl font-bold mb-6 text-gray-200">Edytuj Produkt</h1>
+    <div class="max-w-3xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50">
+        <h1 class="text-2xl font-bold mb-6 text-sky-700">Edytuj Produkt</h1>
 
         <form action="{{ route('products.update', $product) }}" method="POST">
             @csrf
@@ -70,7 +70,7 @@
                            class="w-full border border-slate-700 bg-slate-800 text-gray-100 p-2 mb-2 rounded">
                 </div>
                 <button type="button" id="add-barcode" 
-                        class="mb-4 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-gray-100 rounded transition">
+                        class="mb-4 px-3 py-1 bg-gray-800 hover:bg-gray-600 text-gray-100 rounded transition">
                     Dodaj kolejny EAN
                 </button>
             </div>
@@ -78,11 +78,11 @@
             {{-- Submit --}}
             <div class="flex gap-2">
                 <button type="submit" 
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-gray-100 rounded shadow transition">
+                        class="px-4 py-2 bg-green-800 hover:bg-green-600 text-gray-100 rounded shadow transition">
                     Zapisz zmiany
                 </button>
                 <a href="{{ route('products.index') }}" 
-                   class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-100 rounded shadow transition">
+                   class="px-4 py-2 bg-gray-800 hover:bg-gray-600 text-gray-100 rounded shadow transition">
                    Anuluj
                 </a>
             </div>

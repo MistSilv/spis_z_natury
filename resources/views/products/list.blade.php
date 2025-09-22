@@ -1,11 +1,11 @@
 {{-- resources/views/products/list.blade.php --}}
 <x-layout title="Lista Produktów">
     <div class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-teal-700/50">
-        <h1 class="text-2xl font-bold mb-6 text-gray-200">Lista Produktów</h1>
+        <h1 class="text-2xl font-bold mb-6 text-sky-700">Lista Produktów</h1>
 
         <div class="mb-6 flex gap-4 flex-wrap">
             <a href="{{ route('products.create') }}"
-               class="bg-blue-800 hover:bg-blue-500 text-gray-100 px-4 py-2 rounded-lg shadow transition">
+               class="bg-sky-800 hover:bg-sky-600 text-gray-100 px-4 py-2 rounded-lg shadow transition">
                + Dodaj produkt
             </a>
         </div>
@@ -32,7 +32,7 @@
                             </td>
                             <td class="px-4 py-2 flex gap-2">
                                 <a href="{{ route('products.edit', $product) }}" 
-                                   class="bg-teal-800 hover:bg-teal-600 text-slate-100 px-3 py-1 rounded shadow transition">
+                                   class="bg-sky-800 hover:bg-sky-600 text-slate-100 px-3 py-1 rounded shadow transition">
                                    Edytuj
                                 </a>
                             </td>

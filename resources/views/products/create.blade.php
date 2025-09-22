@@ -1,7 +1,7 @@
 {{-- resources/views/products/create.blade.php --}}
 <x-layout title="Dodaj Produkt">
-    <div class="max-w-3xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-teal-700/50">
-        <h1 class="text-2xl font-bold mb-6 text-gray-200">Dodaj Produkt</h1>
+    <div class="max-w-3xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50">
+        <h1 class="text-2xl font-bold mb-6 text-sky-700">Dodaj Produkt</h1>
 
         <form action="{{ route('products.store') }}" method="POST">
             @csrf
@@ -65,7 +65,7 @@
             {{-- Zapisz --}}
             <div class="mt-6 flex gap-2">
                 <button type="submit"
-                        class="px-4 py-2 bg-green-800 hover:bg-green-800 text-gray-100 rounded shadow transition">
+                        class="px-4 py-2 bg-green-800 hover:bg-green-600 text-gray-100 rounded shadow transition">
                     Zapisz produkt
                 </button>
                 <a href="{{ route('products.index') }}"

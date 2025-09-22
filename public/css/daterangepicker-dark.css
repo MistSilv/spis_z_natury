@@ -1,25 +1,25 @@
 /* Główne okno */
 .daterangepicker {
-  background: #111;
-  color: #e5e5e5;
+  background: #1c1c1c; /* łagodniejszy ciemny kolor niż czysta czerń */
+  color: #d0d0d0; /* zamiast białego, delikatny szary */
   border: 1px solid #333;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6); /* łagodniejszy cień */
 }
 
 /* Lewy panel z presetami */
 .daterangepicker .ranges {
-  background: #1a1a1a;
+  background: #252525; /* ciemny grafit, przyjemniejszy dla oka */
   border-right: 1px solid #333;
 }
 .daterangepicker .ranges ul li {
-  color: #ccc;
+  color: #b0b0b0; /* delikatniejszy szary niż poprzednio */
   padding: 10px 12px;
   cursor: pointer;
 }
 .daterangepicker .ranges ul li.active,
 .daterangepicker .ranges ul li:hover {
   background: #333;
-  color: #fff;
+  color: #e0e0e0; /* jaśniejszy szary przy hover/aktywne */
 }
 
 /* Kalendarze */
@@ -28,42 +28,42 @@
 }
 .daterangepicker .calendar-table th,
 .daterangepicker .calendar-table td {
-  color: #ddd;
+  color: #ccc;
 }
 .daterangepicker .calendar-table td.off {
-  color: #555;
+  color: #888; /* łagodniejszy szary */
 }
 .daterangepicker .calendar-table td.active,
 .daterangepicker .calendar-table td.active:hover {
-  background: #444;
-  color: #fff;
+  background: #3a3a3a; /* bardziej stonowany ciemny */
+  color: #e0e0e0;
 }
 .daterangepicker .calendar-table td.in-range {
-  background: #222;
-  color: #eee;
+  background: #2a2a2a;
+  color: #d0d0d0;
 }
 .daterangepicker .calendar-table td:hover {
-  background: #333;
-  color: #fff;
+  background: #3b3b3b;
+  color: #f0f0f0;
 }
 
 /* Przyciski Apply/Cancel */
 .daterangepicker .drp-buttons {
-  background: #111;
+  background: #1c1c1c;
   border-top: 1px solid #333;
 }
 .daterangepicker .drp-buttons .applyBtn {
-  background: #444 !important;
-  color: #fff !important;
+  background: #3a3a3a !important;
+  color: #e0e0e0 !important;
   border: none;
 }
 .daterangepicker .drp-buttons .applyBtn:hover {
-  background: #666 !important;
+  background: #555 !important;
 }
 .daterangepicker .drp-buttons .cancelBtn {
-  color: #bbb;
+  color: #aaa;
   background: transparent;
 }
 .daterangepicker .drp-buttons .cancelBtn:hover {
-  color: #fff;
+  color: #d0d0d0;
 }
