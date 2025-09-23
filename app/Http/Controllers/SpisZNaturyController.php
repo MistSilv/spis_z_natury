@@ -117,7 +117,7 @@ class SpisZNaturyController extends Controller
         return view('spisy.spis_produkty', compact('spis', 'produktySpisu'));
     }
 
-    public function podsumowanieSpisu(SpisZNatury $spis)
+    public function podsumowanieSpisu(SpisZNatury $spis, Request $request)
 {
     $produktySpisu = SpisProdukty::where('spis_id', $spis->id)
         ->orderBy('added_at', 'desc')
@@ -156,18 +156,67 @@ public function deleteProduktSpisu(SpisZNatury $spis, SpisProdukty $produkt)
 }
 
 
-public function archiwum()
+public function archiwum(Request $request)
 {
-    $spisy = SpisZNatury::with(['user', 'region'])
-        ->orderBy('created_at', 'desc')
-        ->paginate(20); 
-    return view('spisy.archiwum', compact('spisy'));
+    $query = SpisZNatury::with(['user', 'region'])
+        ->orderBy('created_at', 'desc');
+
+    if ($request->filled('region_id')) {
+        $query->where('region_id', $request->region_id);
+    }
+
+    if ($request->filled('date_from')) {
+        $query->whereDate('created_at', '>=', $request->date_from);
+    }
+
+    if ($request->filled('date_to')) {
+        $query->whereDate('created_at', '<=', $request->date_to);
+    }
+
+    $spisy = $query->paginate(20)->appends($request->all());
+    $regions = Region::all();
+
+    return view('spisy.archiwum', compact('spisy', 'regions'));
 }
+
 
 
 public function show(SpisZNatury $spis)
 {
     return redirect()->route('spisy.podsumowanie', $spis->id);
+}
+
+
+public function splitProduktSpisu(Request $request, SpisZNatury $spis, SpisProdukty $produkt)
+{
+    $request->validate([
+        'split_quantity' => 'required|numeric|min:0.01',
+    ]);
+
+    $splitQty = $request->split_quantity;
+
+    if ($splitQty >= $produkt->quantity) {
+        return redirect()->route('spisy.podsumowanie', $spis->id)
+            ->with('error', 'Nie można podzielić – ilość jest większa lub równa oryginalnej.');
+    }
+
+    $produkt->update([
+        'quantity' => $produkt->quantity - $splitQty,
+    ]); 
+
+    SpisProdukty::create([
+        'spis_id'  => $produkt->spis_id,
+        'user_id'  => auth()->id(),
+        'name'     => $produkt->name,
+        'price'    => $produkt->price,
+        'quantity' => $splitQty,
+        'unit'     => $produkt->unit,
+        'barcode'  => $produkt->barcode,
+        'added_at' => now(),
+    ]);
+
+    return redirect()->route('spisy.podsumowanie', $spis->id)
+        ->with('success', 'Produkt został podzielony.');
 }
 
 

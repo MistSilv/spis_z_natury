@@ -68,7 +68,8 @@ Route::post('spisy/{spis}/produkt/{produkt}/update', [SpisZNaturyController::cla
 Route::delete('spisy/{spis}/produkt/{produkt}/delete', [SpisZNaturyController::class, 'deleteProduktSpisu'])
     ->name('spisy.produkty.delete');
 
-
+Route::post('/spisy/{spis}/produkty/{produkt}/split', [SpisZNaturyController::class, 'splitProduktSpisu'])
+    ->name('spisy.produkty.split');
 
 
 // lista produktów

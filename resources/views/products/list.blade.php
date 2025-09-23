@@ -1,6 +1,6 @@
 {{-- resources/views/products/list.blade.php --}}
 <x-layout title="Lista Produktów">
-    <div class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-teal-700/50">
+    <div class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50">
         <h1 class="text-2xl font-bold mb-6 text-sky-700">Lista Produktów</h1>
 
         <div class="mb-6 flex gap-4 flex-wrap">

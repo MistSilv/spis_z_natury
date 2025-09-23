@@ -63,7 +63,9 @@
 
                             <!-- Ilość -->
                             <td class="p-2 relative">
-                                <span x-show="!showQtyInput || currentRow != {{ $index }}">{{ $produkt->quantity }}</span>
+                                <span x-show="!showQtyInput || currentRow != {{ $index }}">
+                                    {{ number_format($produkt->quantity, 2, '.', '') }}
+                                </span>
                                 <form x-show="showQtyInput && currentRow == {{ $index }}" method="POST" action="{{ route('spisy.produkty.update', [$spis->id, $produkt->id]) }}" class="flex gap-1 mt-1">
                                     @csrf
                                     <input type="number" step="0.01" name="quantity" x-model="newQty" class="w-20 p-1 rounded bg-slate-900 text-white border border-teal-600">
@@ -101,6 +103,20 @@
                     class="block w-full px-4 py-3 hover:bg-gray-800 focus:outline-none focus:bg-gray-800 text-left font-semibold">
                 📊 Edytuj ilość
             </button>
+
+            <button @click.prevent="
+                let splitQty = prompt('Podaj ilość do wydzielenia:');
+                if(splitQty && !isNaN(splitQty) && splitQty > 0) {
+                    let form = document.getElementById('split-form-' + produktId);
+                    form.querySelector('input[name=split_quantity]').value = splitQty;
+                    form.submit();
+                }
+                menuOpen = false;
+            "
+            class="block w-full px-4 py-3 hover:bg-gray-800 focus:outline-none focus:bg-gray-800 text-left font-semibold">
+                ✂️ Podziel produkt
+            </button>
+
             
             <button @click.prevent="
                 if(confirm('Czy na pewno chcesz usunąć ten produkt?')) {
@@ -120,6 +136,14 @@
                 @method('DELETE')
             </form>
         @endforeach
+
+        @foreach($produktySpisu as $produkt)
+            <form id="split-form-{{ $produkt->id }}" method="POST" action="{{ route('spisy.produkty.split', [$spis->id, $produkt->id]) }}" class="hidden">
+                @csrf
+                <input type="hidden" name="split_quantity" value="0">
+            </form>
+        @endforeach
+
 
         <!-- Paginacja -->
         <div class="mt-4">

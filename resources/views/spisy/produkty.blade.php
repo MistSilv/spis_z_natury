@@ -79,7 +79,7 @@
                                 <td class="p-2">{{ $produkt->product->name ?? 'Brak nazwy' }}</td>
                                 <td class="p-2">{{ $produkt->product->price ?? '-' }}</td>
                                 <td class="p-2">{{ $produkt->product->unit->name ?? '-' }}</td>
-                                <td class="p-2">{{ $produkt->quantity }}</td>
+                                <td class="p-2">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
                                 <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
                                 <td class="p-2">{{ $produkt->scanned_at }}</td>
                             </tr>
@@ -118,7 +118,7 @@
                                 <td class="p-2">{{ $produkt->name }}</td>
                                 <td class="p-2">{{ $produkt->price }}</td>
                                 <td class="p-2">{{ $produkt->unit }}</td>
-                                <td class="p-2">{{ $produkt->quantity }}</td>
+                                <td class="p-2">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
                                 <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
                                 <td class="p-2">{{ $produkt->user->name ?? '-' }}</td>
                             </tr>
