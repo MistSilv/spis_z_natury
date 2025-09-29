@@ -160,5 +160,9 @@
             </p>
         </div>
 
+        <a href="{{ route('spisy.export.pdf', $spis->id) }}" class="inline-block px-4 py-2 mb-4 bg-sky-700 text-white rounded hover:bg-sky-800 font-bold">
+            Generuj PDF
+        </a>
+
     </div>
 </x-layout>

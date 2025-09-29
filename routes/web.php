@@ -7,6 +7,7 @@ use App\Http\Controllers\ProduktSkanyController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\SpisZNaturyController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SpisPdfController;
 
 // Przekierowanie ze strony głównej na /login
 Route::get('/', function () {
@@ -95,6 +96,7 @@ Route::prefix('spisy/{spis}')->group(function () {
 
 Route::get('/spisy/{spis}/produkty-temp', [SpisZNaturyController::class, 'showTmpProdukty'])->name('spisy.tmp');
 
+Route::get('/spisy/{spis}/pdf', [SpisPdfController::class, 'export'])->name('spisy.export.pdf');
 
 
 
