@@ -87,6 +87,13 @@ Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name
 // aktualizacja produktu
 Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
 
+Route::prefix('spisy/{spis}')->group(function () {
+    Route::post('/produkty-temp/{produkt}/update', [\App\Http\Controllers\SpisProduktyTmpController::class, 'update'])->name('spisy.produkty.temp.update');
+    Route::post('/produkty-temp/{produkt}/split', [\App\Http\Controllers\SpisProduktyTmpController::class, 'split'])->name('spisy.produkty.temp.split');
+    Route::delete('/produkty-temp/{produkt}/delete', [\App\Http\Controllers\SpisProduktyTmpController::class, 'destroy'])->name('spisy.produkty.temp.delete');
+});
+
+Route::get('/spisy/{spis}/produkty-temp', [SpisZNaturyController::class, 'showTmpProdukty'])->name('spisy.tmp');
 
 
 

@@ -146,9 +146,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('region_id')->constrained('regions');
             $table->decimal('quantity', 15, 2)->default(1);
+            $table->decimal('used_quantity', 15, 2)->default(0);
             $table->timestamp('scanned_at')->useCurrent();
             $table->string('barcode', 13)->nullable();
-
+            
             $table->index(['product_id', 'region_id']);
             $table->index(['user_id', 'scanned_at']);
         });
@@ -180,7 +181,23 @@ return new class extends Migration
             $table->index(['user_id', 'added_at']);
         });
 
-        
+        Schema::create('spis_produkty_tmp', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('spis_id');
+            $table->foreignId('user_id');
+            $table->foreignId('product_id');
+            $table->foreignId('region_id');
+            $table->string('name');
+            $table->decimal('price', 12, 2);
+            $table->decimal('quantity', 12, 2);
+            $table->string('unit')->nullable();
+            $table->string('barcode')->nullable();
+            $table->timestamp('scanned_at')->nullable();
+            $table->timestamp('added_at')->nullable();
+            $table->timestamps();
+
+        });
+
 
 
 
@@ -199,6 +216,7 @@ return new class extends Migration
         Schema::dropIfExists('spis_produkty');
         Schema::dropIfExists('spis_z_natury');
         Schema::dropIfExists('produkt_skany');
+        Schema::dropIfExists('spis_produkty_tmp');
         Schema::dropIfExists('barcodes');
         Schema::dropIfExists('products');
         Schema::dropIfExists('units');
