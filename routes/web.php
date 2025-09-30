@@ -80,7 +80,6 @@ Route::put('/products/{product}', [ProductController::class, 'update'])->name('p
 
 Route::get('/spisy/{spis}/produkty-temp', [SpisZNaturyController::class, 'showTmpProdukty'])->name('spisy.tmp');
 
-<<<<<<< HEAD
 Route::post('/spisy/{spis}/produkty/finalize', [SpisZNaturyController::class, 'finalizeProdukty'])
     ->name('spisy.produkty.finalize');
 
@@ -90,9 +89,7 @@ Route::post('/spisy/{spis}/produkty/finalize', [SpisZNaturyController::class, 'f
 
 
 
-=======
 Route::get('/spisy/{spis}/pdf', [SpisPdfController::class, 'export'])->name('spisy.export.pdf');
->>>>>>> 8c53d4a442332ab11cdcaf020f442618014b826b
 
 
 
