@@ -87,9 +87,10 @@ Route::post('/spisy/{spis}/produkty/finalize', [SpisZNaturyController::class, 'f
     [\App\Http\Controllers\SpisProduktyTmpController::class, 'update']
 )->name('spisy.produkty.temp.update');
 
-
-
 Route::get('/spisy/{spis}/pdf', [SpisPdfController::class, 'export'])->name('spisy.export.pdf');
+
+Route::post('/spisy/{spis}/reset', [SpisZNaturyController::class, 'reset'])->name('spisy.reset');
+
 
 
 

@@ -54,6 +54,11 @@ class SpisZNaturyController extends Controller
 
     public function showProdukty(SpisZNatury $spis, Request $request)
     {
+        // Sprawdź czy są niezatwierdzone TMP dla usera
+        $unfinished = SpisProduktyTmp::where('spis_id', $spis->id)
+            ->where('user_id', auth()->id())
+            ->exists();
+
         // Produkty zeskanowane
         $produkty = ProduktSkany::with(['product.unit'])
             ->where('region_id', $spis->region_id);
@@ -76,8 +81,33 @@ class SpisZNaturyController extends Controller
             ->orderBy('added_at', 'asc')
             ->paginate(50, ['*'], 'produktyTmpPage');
 
-        return view('spisy.produkty', compact('spis', 'produkty', 'produktySpisu'));
+        return view('spisy.produkty', compact('spis', 'produkty', 'produktySpisu', 'unfinished'));
     }
+
+     // idioto odporna funckja w trakcie kraftowania spisu 
+   public function reset(SpisZNatury $spis)
+{
+    DB::transaction(function () use ($spis) {
+        // Pobierz wszystkie TMP produkty z tego spisu
+        $produktyTmp = SpisProduktyTmp::where('spis_id', $spis->id)->get();
+
+        foreach ($produktyTmp as $tmp) {
+            if ($tmp->produkt_skany_id) {
+                // Cofnij zużycie w produkt_skany
+                ProduktSkany::where('id', $tmp->produkt_skany_id)
+                    ->update([
+                        'used_quantity' => DB::raw("GREATEST(0, used_quantity - {$tmp->quantity})")
+                    ]);
+            }
+        }
+
+        // Usuń wpisy tymczasowe
+        SpisProduktyTmp::where('spis_id', $spis->id)->delete();
+    });
+
+    return redirect()->route('spisy.produkty', $spis->id)
+        ->with('success', 'Spis został wyczyszczony i ilości przywrócone.');
+}
 
 
 
@@ -219,6 +249,7 @@ public function addProdukty(Request $request, SpisZNatury $spis)
                         'user_id'    => auth()->id(),
                         'product_id' => $productId,
                         'region_id'  => $spis->region_id,
+                        'produkt_skany_id' => $scan->id,
                         'name'       => $scan->product->name ?? 'Brak nazwy',
                         'price'      => $scan->product->price ?? 0,
                         'quantity'   => $take,

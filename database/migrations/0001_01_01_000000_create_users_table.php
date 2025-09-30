@@ -187,6 +187,7 @@ return new class extends Migration
             $table->foreignId('user_id');
             $table->foreignId('product_id');
             $table->foreignId('region_id');
+            $table->foreignId('produkt_skany_id');
             $table->string('name');
             $table->decimal('price', 12, 2);
             $table->decimal('quantity', 12, 2);

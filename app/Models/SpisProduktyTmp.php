@@ -16,6 +16,7 @@ class SpisProduktyTmp extends Model
         'user_id',
         'product_id',
         'region_id',
+        'produkt_skany_id',
         'name',
         'price',
         'quantity',
