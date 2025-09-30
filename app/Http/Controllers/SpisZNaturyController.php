@@ -54,6 +54,11 @@ class SpisZNaturyController extends Controller
 
     public function showProdukty(SpisZNatury $spis, Request $request)
     {
+        // Sprawdź czy są niezatwierdzone TMP dla usera
+        $unfinished = SpisProduktyTmp::where('spis_id', $spis->id)
+            ->where('user_id', auth()->id())
+            ->exists();
+
         // Produkty zeskanowane
         $produkty = ProduktSkany::with(['product.unit'])
             ->where('region_id', $spis->region_id);
@@ -76,8 +81,33 @@ class SpisZNaturyController extends Controller
             ->orderBy('added_at', 'asc')
             ->paginate(50, ['*'], 'produktyTmpPage');
 
-        return view('spisy.produkty', compact('spis', 'produkty', 'produktySpisu'));
+        return view('spisy.produkty', compact('spis', 'produkty', 'produktySpisu', 'unfinished'));
     }
+
+     // idioto odporna funckja w trakcie kraftowania spisu 
+   public function reset(SpisZNatury $spis)
+{
+    DB::transaction(function () use ($spis) {
+        // Pobierz wszystkie TMP produkty z tego spisu
+        $produktyTmp = SpisProduktyTmp::where('spis_id', $spis->id)->get();
+
+        foreach ($produktyTmp as $tmp) {
+            if ($tmp->produkt_skany_id) {
+                // Cofnij zużycie w produkt_skany
+                ProduktSkany::where('id', $tmp->produkt_skany_id)
+                    ->update([
+                        'used_quantity' => DB::raw("GREATEST(0, used_quantity - {$tmp->quantity})")
+                    ]);
+            }
+        }
+
+        // Usuń wpisy tymczasowe
+        SpisProduktyTmp::where('spis_id', $spis->id)->delete();
+    });
+
+    return redirect()->route('spisy.produkty', $spis->id)
+        ->with('success', 'Spis został wyczyszczony i ilości przywrócone.');
+}
 
 
 
@@ -219,6 +249,7 @@ public function addProdukty(Request $request, SpisZNatury $spis)
                         'user_id'    => auth()->id(),
                         'product_id' => $productId,
                         'region_id'  => $spis->region_id,
+                        'produkt_skany_id' => $scan->id,
                         'name'       => $scan->product->name ?? 'Brak nazwy',
                         'price'      => $scan->product->price ?? 0,
                         'quantity'   => $take,
@@ -368,112 +399,7 @@ public function addProdukty(Request $request, SpisZNatury $spis)
         return view('spisy.podsumowanie', compact('spis', 'produktySpisu', 'totalValue', 'totalItems'));
     }
 
-    public function updateTmpProdukt(Request $request, SpisZNatury $spis, SpisProduktyTmp $produkt)
-    {
-        $request->validate([
-            'price' => 'required|numeric|min:0',
-            'quantity' => 'required|numeric|min:0',
-        ]);
 
-        $newQty = (float) $request->quantity;
-        $oldQty = (float) $produkt->quantity;
-        $diff = $newQty - $oldQty;
-
-        $produkt->update(['price' => $request->price]);
-        if ($diff == 0) {
-            return back()->with('success', 'Zmieniono cenę produktu.');
-        }
-
-        $scan = ProduktSkany::where('product_id', $produkt->product_id)
-            ->where('region_id', $spis->region_id)
-            ->where('scanned_at', $produkt->scanned_at)
-            ->first();
-
-        if (!$scan) {
-            return back()->with('error', 'Nie znaleziono partii FIFO dla produktu.');
-        }
-
-        if ($diff > 0) {
-            $remaining = $diff;
-            $available = max(0, $scan->quantity - $scan->used_quantity);
-
-            if ($available >= $remaining) {
-                $scan->increment('used_quantity', $remaining);
-                $produkt->increment('quantity', $remaining);
-            } else {
-                if ($available > 0) {
-                    $scan->increment('used_quantity', $available);
-                    $produkt->increment('quantity', $available);
-                    $remaining -= $available;
-                }
-
-                $kolejnePartie = ProduktSkany::where('product_id', $produkt->product_id)
-                    ->where('region_id', $spis->region_id)
-                    ->where('scanned_at', '>', $scan->scanned_at)
-                    ->orderBy('scanned_at', 'asc')
-                    ->get();
-
-                foreach ($kolejnePartie as $partia) {
-                    $av = max(0, $partia->quantity - $partia->used_quantity);
-                    if ($av <= 0) {
-                        continue;
-                    }
-
-                    $take = min($remaining, $av);
-                    $partia->increment('used_quantity', $take);
-
-                    SpisProduktyTmp::create([
-                        'spis_id' => $spis->id,
-                        'user_id' => auth()->id(),
-                        'product_id' => $produkt->product_id,
-                        'region_id' => $spis->region_id,
-                        'name' => $produkt->name,
-                        'price' => $produkt->price,
-                        'quantity' => $take,
-                        'unit' => $produkt->unit,
-                        'barcode' => $produkt->barcode,
-                        'scanned_at' => $partia->scanned_at,
-                        'added_at' => now(),
-                    ]);
-
-                    $remaining -= $take;
-                    if ($remaining <= 0) {
-                        break;
-                    }
-                }
-
-                if ($remaining > 0) {
-                    return back()->with('warning', "Nie udało się przydzielić pełnej ilości. Brakuje {$remaining} szt.");
-                }
-            }
-        } else {
-            $reduce = abs($diff);
-            if ($reduce > $produkt->quantity) {
-                return back()->with('error', 'Nie można zmniejszyć ilości poniżej zera.');
-            }
-
-            $scan->decrement('used_quantity', min($reduce, $scan->used_quantity));
-            $produkt->decrement('quantity', min($reduce, $produkt->quantity));
-        }
-
-        return back()->with('success', 'Ilość zaktualizowana zgodnie z FIFO.');
-    }
-
-    public function deleteTmpProdukt(SpisZNatury $spis, SpisProduktyTmp $produkt)
-    {
-        $scan = ProduktSkany::where('product_id', $produkt->product_id)
-            ->where('barcode', $produkt->barcode)
-            ->where('region_id', $spis->region_id)
-            ->where('scanned_at', $produkt->scanned_at)
-            ->first();
-
-        if ($scan) {
-            $scan->decrement('used_quantity', $produkt->quantity);
-        }
-
-        $produkt->delete();
-        return back()->with('success', 'Produkt tymczasowy usunięty, ilość przywrócona do FIFO.');
-    }
 
     public function archiwum(Request $request)
     {
@@ -500,4 +426,34 @@ public function addProdukty(Request $request, SpisZNatury $spis)
     {
         return redirect()->route('spisy.podsumowanie', $spis->id);
     }
+
+
+
+    public function finalizeProdukty(SpisZNatury $spis)
+{
+    DB::transaction(function () use ($spis) {
+        $produktyTmp = SpisProduktyTmp::where('spis_id', $spis->id)->get();
+
+        foreach ($produktyTmp as $tmp) {
+            SpisProdukty::create([
+                'spis_id'    => $spis->id,
+                'user_id'    => $tmp->user_id,
+                'name'       => $tmp->name,
+                'price'      => $tmp->price,
+                'quantity'   => $tmp->quantity,
+                'unit'       => $tmp->unit,
+                'barcode'    => $tmp->barcode,
+                'added_at'   => $tmp->added_at,
+            ]);
+        }
+
+        SpisProduktyTmp::where('spis_id', $spis->id)->delete();
+    });
+
+    return redirect()->route('spisy.podsumowanie', $spis->id)
+        ->with('success', 'Produkty zostały przeniesione do spisu głównego i zapisane.');
 }
+}
+
+
+

@@ -18,51 +18,18 @@ class SpisProduktyTmpController extends Controller
 
     }
 
+
     public function update(Request $request, SpisZNatury $spis, SpisProduktyTmp $produkt)
     {
-        $validated = $request->validate([
-            'price' => 'nullable|numeric|min:0',
-            'quantity' => 'nullable|numeric|min:0',
-        ]);
-
-        $produkt->update($validated);
-
-        return back()->with('success', 'Zaktualizowano produkt tymczasowy.');
-    }
-
-    public function split(Request $request, SpisZNatury $spis, SpisProduktyTmp $produkt)
-    {
         $request->validate([
-            'split_quantity' => 'required|numeric|min:0.01',
+            'price' => 'required|numeric|min:0',
         ]);
 
-        $splitQty = $request->split_quantity;
-
-        if ($splitQty >= $produkt->quantity) {
-            return back()->with('error', 'Nie można wydzielić większej ilości niż dostępna.');
-        }
-
-        $produkt->quantity -= $splitQty;
-        $produkt->save();
-
-        SpisProduktyTmp::create([
-            'spis_id' => $spis->id,
-            'name' => $produkt->name,
-            'price' => $produkt->price,
-            'quantity' => $splitQty,
-            'unit' => $produkt->unit,
-            'barcode' => $produkt->barcode,
-            'user_id' => $produkt->user_id,
-            'added_at' => now(),
+        $produkt->update([
+            'price' => $request->price,
         ]);
 
-        return back()->with('success', 'Podzielono produkt.');
+        return back()->with('success', "Cena produktu '{$produkt->name}' została zaktualizowana.");
     }
 
-    public function destroy(SpisZNatury $spis, SpisProduktyTmp $produkt)
-    {
-        $produkt->delete();
-
-        return back()->with('success', 'Usunięto produkt tymczasowy.');
-    }
 }

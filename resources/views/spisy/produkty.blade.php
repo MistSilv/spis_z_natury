@@ -1,15 +1,11 @@
 <x-layout title="Produkty dla regionu {{ $spis->region->name }}">
-    {{-- Daterangepicker CSS --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-    <link rel="stylesheet" href="{{ asset('css/daterangepicker-dark.css') }}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <script src="{{ asset('js/daterangepicker-init.js') }}"></script>
+<div class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50"
+     x-data="{ contextOpen: false, contextX: 0, contextY: 0, selectedId: null }"
+     @click.window="contextOpen = false">
 
-    @if(session('success'))
-        <p class="mb-6 text-green-800 font-semibold">{{ session('success') }}</p>
-    @endif
+	@if(session('success'))
+            <p class="mb-6 text-green-800 font-semibold">{{ session('success') }}</p>
+        @endif
 
     <!-- Formularz filtrowania -->
     <form method="GET" action="{{ route('spisy.produkty', $spis->id) }}" class="mb-6 flex gap-4 items-end flex-wrap" id="filterForm">
@@ -54,11 +50,11 @@
         </button>
     </form>
 
-    <!-- ================== TABELA: zeskanowane ================== -->
-    <div class="mb-8">
-        <h2 class="text-xl font-bold text-sky-700 mb-2 border-b border-cyan-500 pb-1 ">
-            Produkty zeskanowane dla regionu {{ $spis->region->name }}
-        </h2>
+        <!-- ================== TABELA: zeskanowane ================== -->
+<div class="mb-8">
+            <h2 class="text-xl font-bold text-sky-700 mb-2 border-b border-cyan-500 pb-1 ">
+                Produkty zeskanowane dla regionu {{ $spis->region->name }}
+            </h2>
 
         <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-neutral-700 rounded-lg shadow-inner">
             <table class="min-w-full text-left text-gray-300 border-collapse">
@@ -87,9 +83,13 @@
             </table>
         </div>
 
-        <!-- Paginacja dla tabeli 1 -->
-        <div class="mt-2">
-            {{ $produkty->links() }}
+            <!-- Paginacja dla tabeli 1 -->
+            <div class="mt-2">
+                {{ $produkty->links() }}
+            </div>
         </div>
-    </div>
+
+
+      
+    
 </x-layout>

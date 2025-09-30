@@ -1,16 +1,5 @@
 <x-layout title="Podsumowanie spisu {{ $spis->name }}">
-    <div x-data="{
-            menuOpen: false,
-            menuX: 0,
-            menuY: 0,
-            currentRow: null,
-            showPriceInput: false,
-            showQtyInput: false,
-            newPrice: 0,
-            newQty: 0,
-            produktId: null
-        }"
-         class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50">
+    <div class="max-w-7xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50">
 
         <h1 class="text-2xl font-bold text-sky-700 mb-6">
             Podsumowanie spisu: {{ $spis->name }}
@@ -19,7 +8,7 @@
         <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-neutral-700 rounded-lg shadow-inner mb-4">
             <table class="min-w-full text-left text-gray-300 border-collapse ">
                 <thead class="sticky top-0 bg-neutral-900 text-sm text-white z-10">
-                    <tr">
+                    <tr>
                         <th class="p-2">Produkt</th>
                         <th class="p-2">Cena</th>
                         <th class="p-2">Jednostka</th>
@@ -30,120 +19,22 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-neutral-700">
-                    @foreach($produktySpisu as $index => $produkt)
-                        <tr 
-                            @contextmenu.prevent="
-                                menuOpen = true;
-                                menuX = $event.pageX;
-                                menuY = $event.pageY;
-                                currentRow = {{ $index }};
-                                showPriceInput = false;
-                                showQtyInput = false;
-                                newPrice = {{ $produkt->price }};
-                                newQty = {{ $produkt->quantity }};
-                                produktId = {{ $produkt->id }};
-                            "
-                            class="even:bg-black hover:bg-neutral-800/70 transition">
-
+                    @foreach($produktySpisu as $produkt)
+                        <tr class="even:bg-black hover:bg-neutral-800/70 transition">
                             <td class="p-2 font-medium">{{ $produkt->name }}</td>
-
-                            <!-- Cena -->
-                            <td class="p-2 relative">
-                                <span x-show="!showPriceInput || currentRow != {{ $index }}">{{ number_format($produkt->price, 2) }}</span>
-                                <form x-show="showPriceInput && currentRow == {{ $index }}" method="POST" action="{{ route('spisy.produkty.update', [$spis->id, $produkt->id]) }}" class="flex gap-1 mt-1">
-                                    @csrf
-                                    <input type="number" step="0.01" name="price" x-model="newPrice" class="w-20 p-1 rounded bg-slate-900 text-white border border-teal-600">
-                                    <input type="hidden" name="quantity" value="{{ $produkt->quantity }}">
-                                    <button type="submit" class="px-2 py-1 bg-teal-600 hover:bg-teal-700 rounded text-white text-sm">Zapisz</button>
-                                </form>
-                            </td>
-
-                            <!-- Jednostka -->
+                            <td class="p-2">{{ number_format($produkt->price, 2) }}</td>
                             <td class="p-2">{{ $produkt->unit }}</td>
-
-                            <!-- Ilość -->
-                            <td class="p-2 relative">
-                                <span x-show="!showQtyInput || currentRow != {{ $index }}">
-                                    {{ number_format($produkt->quantity, 2, '.', '') }}
-                                </span>
-                                <form x-show="showQtyInput && currentRow == {{ $index }}" method="POST" action="{{ route('spisy.produkty.update', [$spis->id, $produkt->id]) }}" class="flex gap-1 mt-1">
-                                    @csrf
-                                    <input type="number" step="0.01" name="quantity" x-model="newQty" class="w-20 p-1 rounded bg-slate-900 text-white border border-teal-600">
-                                    <input type="hidden" name="price" value="{{ $produkt->price }}">
-                                    <button type="submit" class="px-2 py-1 bg-teal-600 hover:bg-teal-700 rounded text-white text-sm">Zapisz</button>
-                                </form>
-                            </td>
-
+                            <td class="p-2">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
                             <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
                             <td class="p-2">{{ $produkt->user->name ?? '-' }}</td>
-                            <td class="p-2 font-semibold text-sky-700">{{ number_format($produkt->price * $produkt->quantity, 2) }}</td>
+                            <td class="p-2 font-semibold text-sky-700">
+                                {{ number_format($produkt->price * $produkt->quantity, 2) }}
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-
-        <!-- Globalne menu kontekstowe -->
-        <div 
-            x-show="menuOpen"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 transform scale-90"
-            x-transition:enter-end="opacity-100 transform scale-100"
-            x-transition:leave="transition ease-in duration-150"
-            @click.away="menuOpen = false"
-            :style="'position: fixed; top: ' + menuY + 'px; left: ' + menuX + 'px;'"
-            class="bg-black border border-gray-700 rounded-lg shadow-2xl text-white text-sm w-48 z-50 overflow-hidden">
-            
-            <button @click.prevent="showPriceInput = true; showQtyInput = false; menuOpen = false"
-                    class="block w-full px-4 py-3 hover:bg-gray-800 focus:outline-none focus:bg-gray-800 text-left font-semibold">
-                ✏️ Edytuj cenę
-            </button>
-            
-            <button @click.prevent="showQtyInput = true; showPriceInput = false; menuOpen = false"
-                    class="block w-full px-4 py-3 hover:bg-gray-800 focus:outline-none focus:bg-gray-800 text-left font-semibold">
-                📊 Edytuj ilość
-            </button>
-
-            <button @click.prevent="
-                let splitQty = prompt('Podaj ilość do wydzielenia:');
-                if(splitQty && !isNaN(splitQty) && splitQty > 0) {
-                    let form = document.getElementById('split-form-' + produktId);
-                    form.querySelector('input[name=split_quantity]').value = splitQty;
-                    form.submit();
-                }
-                menuOpen = false;
-            "
-            class="block w-full px-4 py-3 hover:bg-gray-800 focus:outline-none focus:bg-gray-800 text-left font-semibold">
-                ✂️ Podziel produkt
-            </button>
-
-            
-            <button @click.prevent="
-                if(confirm('Czy na pewno chcesz usunąć ten produkt?')) {
-                    $event.preventDefault();
-                    document.getElementById('delete-form-' + produktId).submit();
-                }
-                menuOpen = false;
-            " class="block w-full px-4 py-3 hover:bg-red-800 focus:outline-none focus:bg-red-800 text-left text-red-400 font-semibold">
-                🗑️ Usuń produkt
-            </button>
-        </div>
-
-        <!-- Ukryte formularze usuwania dla każdego produktu -->
-        @foreach($produktySpisu as $produkt)
-            <form id="delete-form-{{ $produkt->id }}" method="POST" action="{{ route('spisy.produkty.delete', [$spis->id, $produkt->id]) }}" class="hidden">
-                @csrf
-                @method('DELETE')
-            </form>
-        @endforeach
-
-        @foreach($produktySpisu as $produkt)
-            <form id="split-form-{{ $produkt->id }}" method="POST" action="{{ route('spisy.produkty.split', [$spis->id, $produkt->id]) }}" class="hidden">
-                @csrf
-                <input type="hidden" name="split_quantity" value="0">
-            </form>
-        @endforeach
-
 
         <!-- Paginacja -->
         <div class="mt-4">
