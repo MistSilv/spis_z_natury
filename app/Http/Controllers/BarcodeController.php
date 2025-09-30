@@ -6,38 +6,79 @@ use Illuminate\Http\Request;
 use App\Models\Barcode;
 use App\Models\ProduktSkany;
 use App\Models\Product;
+use App\Models\ProductPriceHistory;
 use App\Models\Unit;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http; 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class BarcodeController extends Controller
 {
     public function check(Request $request)
     {
+        \Log::info("🎯 CHECK METHOD CALLED");
         $request->validate([
             'barcode' => 'required|string|max:255',
         ]);
 
-        // 1. Najpierw sprawdzamy lokalnie
-        $barcode = Barcode::where('barcode', $request->barcode)->first();
+        $ean = $request->barcode;
+
+        // 1. Sprawdź lokalnie
+        $barcode = Barcode::where('barcode', $ean)->first();
 
         if ($barcode) {
             $product = $barcode->product;
+            $latestPrice = $product->latestPrice;
+
+            // Sprawdź, czy minął 1 dzień od updated_at produktu
+            if (Carbon::parse($product->updated_at)->lt(now()->subDay())) {
+                $url = "http://192.168.210.219/automaty/wyszukaj_towar.php?search=" . urlencode($ean);
+
+                try {
+                    $response = Http::timeout(5)->get($url);
+
+                    if ($response->ok()) {
+                        $data = $response->json();
+                        if (!empty($data)) {
+
+                            //$manualPrice = 123.45;
+                            $produktSklep = $data[0];
+                            $newPrice = $manualPrice ?? (!empty($produktSklep['cena_jednostkowa'])
+                                ? $produktSklep['cena_jednostkowa']
+                                : $latestPrice?->price);
+
+                            // Jeśli cena się zmieniła – dodaj nową do historii
+                            if ($newPrice != $latestPrice?->price) {
+                                $product->prices()->create([
+                                    'price' => $newPrice,
+                                    'changed_at' => now(),
+                                ]);
+                                $latestPrice = $product->latestPrice; // odśwież
+                            }
+                        }
+                    }
+                     $product->touch();
+                } catch (\Exception $e) {
+                    // API error ignored
+                }
+
+                // Aktualizacja updated_at tylko jeśli API zostało uruchomione
+               
+            }
 
             return response()->json([
                 'product' => [
                     'id'      => $product->id,
                     'name'    => $product->name,
-                    'price'   => $product->price,
+                    'price'   => $latestPrice?->price ?? 0,
                     'unit'    => $product->unit->code ?? '',
                     'barcode' => $barcode->barcode,
                 ],
             ]);
         }
 
-        // 2. Jeśli nie ma lokalnie -> sprawdzamy w API
-        $ean = $request->barcode;
+        // 2. Produkt nie znaleziony lokalnie -> sprawdz w API
         $url = "http://192.168.210.219/automaty/wyszukaj_towar.php?search=" . urlencode($ean);
 
         try {
@@ -50,7 +91,6 @@ class BarcodeController extends Controller
             }
 
             $data = $response->json();
-            Log::info('📦 Odpowiedź z API', ['data' => $data]);
 
             if (empty($data)) {
                 return response()->json([
@@ -60,22 +100,28 @@ class BarcodeController extends Controller
 
             $produktSklep = $data[0];
 
-            // Obsłuż cenę – jeśli brak lub null, ustaw 0.99
+            // Cena domyślna jeśli brak w API
             $price = !empty($produktSklep['cena_jednostkowa']) ? $produktSklep['cena_jednostkowa'] : 69.69;
 
-            // 3. Utwórz produkt w bazie
+            // Utwórz jednostkę jeśli brak
             $unit = Unit::firstOrCreate(['code' => $produktSklep['jm']], [
                 'name' => $produktSklep['jm']
             ]);
 
+            // Utwórz produkt
             $product = Product::create([
                 'name'     => $produktSklep['nazwa_towaru'],
-                'price'    => $price,
                 'unit_id'  => $unit->id,
                 'id_abaco' => $produktSklep['idabaco'] ?? null,
             ]);
 
-            // 4. Dodaj wszystkie kody kreskowe
+            // Zapisz cenę w historii
+            $product->prices()->create([
+                'price'      => $price,
+                'changed_at' => now(),
+            ]);
+
+            // Dodaj wszystkie kody kreskowe
             $barcodes = $produktSklep['kody_plu'] ?? [$ean];
             foreach ($barcodes as $bc) {
                 if ($bc) {
@@ -90,7 +136,7 @@ class BarcodeController extends Controller
                 'product' => [
                     'id'      => $product->id,
                     'name'    => $product->name,
-                    'price'   => $product->price,
+                    'price'   => $price,
                     'unit'    => $unit->code,
                     'barcode' => $ean,
                 ],
@@ -106,7 +152,7 @@ class BarcodeController extends Controller
 
     public function save(Request $request)
     {
-        $user = Auth::user(); // pobieramy aktualnie zalogowanego użytkownika
+        $user = Auth::user();
 
         if (!$user) {
             return response()->json([
@@ -120,15 +166,32 @@ class BarcodeController extends Controller
             'barcode'    => 'nullable|string|max:13',
         ]);
 
+        $product = Product::findOrFail($data['product_id']);
+        
+        $scanTimestamp = now();
+
+        Log::info("🎯 SAVE METHOD CALLED");
+        Log::info("Product ID: {$product->id}");
+        Log::info("Scan timestamp: {$scanTimestamp}");
+        Log::info("Request quantity: {$data['quantity']}");
+
+        $priceAtScan = $product->priceAt($scanTimestamp);
+
+        Log::info("🎯 FINAL PRICE FOR SCAN: {$priceAtScan}");
+
         $scan = ProduktSkany::create([
-            'product_id' => $data['product_id'],
-            'user_id'    => $user->id,
-            'region_id'  => $user->region_id ?? 1,
-            'quantity'   => $data['quantity'],
-            'barcode'    => $data['barcode'] ?? null,
-            'scanned_at' => now(),
+            'product_id'    => $data['product_id'],
+            'user_id'       => $user->id,
+            'region_id'     => $user->region_id ?? 1,
+            'price_history' => $priceAtScan,
+            'quantity'      => $data['quantity'],
+            'barcode'       => $data['barcode'] ?? null,
+            'scanned_at'    => $scanTimestamp,
         ]);
+
+        \Log::info("🎯 SCAN SAVED WITH ID: {$scan->id}");
 
         return response()->json(['scan' => $scan]);
     }
+
 }

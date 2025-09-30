@@ -77,6 +77,12 @@
         {{ $produktSkany->links() }}
     </div>
 
+    <script>
+        window.loggedInUserId = {{ auth()->id() }};
+        window.currentRegionId = {{ session('region_id') ?? 1 }};
+    </script>
+
+
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="{{ asset('js/barcode-scanner.js') }}"></script>

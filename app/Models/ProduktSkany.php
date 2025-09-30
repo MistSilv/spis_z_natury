@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ProduktSkany extends Model
 {
     protected $table = 'produkt_skany';
-    protected $fillable = ['product_id', 'user_id', 'region_id', 'quantity', 'barcode', 'used_quantity', 'scanned_at'];
+    protected $fillable = ['product_id', 'user_id', 'region_id', 'price_history', 'quantity', 'barcode', 'used_quantity', 'scanned_at'];
 
     public $timestamps = false;
 

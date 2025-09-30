@@ -44,9 +44,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     body: JSON.stringify({
                         product_id: product.id,
+                        user_id: window.loggedInUserId,       // ← dodałem
+                        region_id: window.currentRegionId,    // ← dodałem
                         quantity: parseInt(qty),
                         barcode: product.barcode
                     })
+
                 });
 
                 const saveData = await saveRes.json();

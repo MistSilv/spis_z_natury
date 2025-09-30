@@ -22,36 +22,36 @@ class ProduktSkanyController extends Controller
     }
 
 
-    public function create()
-    {
-        $products = Product::all();
-        $users = User::all();
-        $regions = Region::all();
+    // public function create()
+    // {
+    //     $products = Product::all();
+    //     $users = User::all();
+    //     $regions = Region::all();
 
-        return view('products.create', compact('products', 'users', 'regions'));
-    }
+    //     return view('products.create', compact('products', 'users', 'regions'));
+    // }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'user_id' => 'required|exists:users,id',
-            'region_id' => 'required|exists:regions,id',
-            'quantity' => 'required|integer|min:1',
-            'barcode' => 'nullable|string|max:13',
-        ]);
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'product_id' => 'required|exists:products,id',
+    //         'user_id' => 'required|exists:users,id',
+    //         'region_id' => 'required|exists:regions,id',
+    //         'quantity' => 'required|integer|min:1',
+    //         'barcode' => 'nullable|string|max:13',
+    //     ]);
 
-        ProduktSkany::create([
-            'product_id' => $request->product_id,
-            'user_id' => $request->user_id,
-            'region_id' => $request->region_id,
-            'quantity' => $request->quantity,
-            'barcode' => $request->barcode,
-            'scanned_at' => now(),
-        ]);
+    //     ProduktSkany::create([
+    //         'product_id' => $request->product_id,
+    //         'user_id' => $request->user_id,
+    //         'region_id' => $request->region_id,
+    //         'quantity' => $request->quantity,
+    //         'barcode' => $request->barcode,
+    //         'scanned_at' => now(),
+    //     ]);
 
-        return redirect()->route('produkt_skany.index')->with('success', 'Skan zapisany!');
-    }
+    //     return redirect()->route('produkt_skany.index')->with('success', 'Skan zapisany!');
+    // }
 
     // Edycja ilości
     public function edit(ProduktSkany $produktSkany)
