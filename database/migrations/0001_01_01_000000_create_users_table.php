@@ -210,6 +210,24 @@ return new class extends Migration
         });
 
 
+        Schema::create('produkty_filtr_tmp', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('region_id')->constrained('regions');
+            $table->foreignId('product_id')->constrained('products');
+            $table->foreignId('produkt_skany_id')->constrained('produkt_skany');
+            $table->string('name');
+            $table->decimal('price', 15, 2)->default(0);
+            $table->decimal('quantity', 15, 2)->default(0);
+            $table->string('unit')->nullable();
+            $table->string('barcode', 50)->nullable();
+            $table->timestamp('scanned_at')->nullable();
+            $table->timestamps();
+
+            $table->index(['user_id', 'region_id']);
+        });
+
+
 
 
 
@@ -227,6 +245,7 @@ return new class extends Migration
         Schema::dropIfExists('spis_produkty');
         Schema::dropIfExists('spis_z_natury');
         Schema::dropIfExists('produkt_skany');
+        Schema::dropIfExists('produkty_filtr_tmp');
         Schema::dropIfExists('spis_produkty_tmp');
         Schema::dropIfExists('barcodes');
         Schema::dropIfExists('products');

@@ -162,142 +162,70 @@ class SpisZNaturyController extends Controller
 
 public function addProdukty(Request $request, SpisZNatury $spis)
 {
-    Log::info('--- START addProdukty ---', [
-        'spis_id' => $spis->id,
-        'region'  => $spis->region_id,
-        'request' => $request->all(),
-    ]);
+    $userId = auth()->id();
+    $regionId = $spis->region_id;
 
-    // 1) produkty widoczne dla użytkownika (filtr dat)
-    $filteredQuery = ProduktSkany::with('product.unit')
-        ->where('region_id', $spis->region_id);
-
-    if ($request->filled('date_from')) {
-        $filteredQuery->whereDate('scanned_at', '>=', $request->date_from);
-    }
-    if ($request->filled('date_to')) {
-        $filteredQuery->whereDate('scanned_at', '<=', $request->date_to);
-    }
-
-    $filteredScans = $filteredQuery->get();
-
-    Log::info('Ilość rekordów w przefiltrowanej tabeli', [
-        'count' => $filteredScans->count()
-    ]);
+    $filteredScans = DB::table('produkty_filtr_tmp')
+        ->where('user_id', $userId)
+        ->where('region_id', $regionId)
+        ->get();
 
     if ($filteredScans->isEmpty()) {
-        Log::warning('Brak produktów w tabeli po filtrze');
-        return back()->with('error', 'Brak produktów w wybranym zakresie dat.');
+        return back()->with('error', 'Brak zapisanych produktów z filtra. Użyj najpierw opcji "Filtruj".');
     }
 
-    // 2) sumujemy potrzeby wg produktu jako float (np. 2 miejsca po przecinku)
+    // grupowanie po product_id
     $neededQuantities = [];
-    foreach ($filteredScans->groupBy('product_id') as $productId => $scans) {
-        $total = round($scans->sum('quantity'), 2);
-        if ($total > 0) {
-            $neededQuantities[$productId] = $total;
-        }
+    foreach ($filteredScans->groupBy('product_id') as $productId => $items) {
+        $neededQuantities[$productId] = round($items->sum('quantity'), 2);
     }
 
-    Log::info('Potrzebne ilości (z tabeli po filtrze)', $neededQuantities);
+    $addedCount = 0;
 
-    if (empty($neededQuantities)) {
-        Log::warning('Brak ilości do dodania');
-        return back()->with('error', 'Brak ilości do dodania.');
-    }
+    foreach ($neededQuantities as $productId => $neededQty) {
+        // 📦 znajdź wszystkie skany tego produktu (FIFO)
+        $scans = ProduktSkany::where('product_id', $productId)
+            ->where('region_id', $regionId)
+            ->where('quantity', '>', 0)
+            ->orderBy('scanned_at', 'asc') // najstarsze pierwsze
+            ->orderBy('id', 'asc') // a w razie identycznych dat — po ID
+            ->get();
 
-    $createdCount = 0;
+        $remaining = $neededQty;
 
-    // 3) przetwarzamy każdy produkt w osobnej transakcji (FIFO)
-    foreach ($neededQuantities as $productId => $totalNeeded) {
-        try {
-            DB::transaction(function () use ($productId, $totalNeeded, $spis, &$createdCount) {
-                Log::info("→ START FIFO dla produktu {$productId}", [
-                    'needed_total' => $totalNeeded
-                ]);
+        foreach ($scans as $scan) {
+            if ($remaining <= 0) break;
 
-                $allScans = ProduktSkany::with('product.unit')
-                    ->where('region_id', $spis->region_id)
-                    ->where('product_id', $productId)
-                    ->whereRaw('(COALESCE(quantity,0) - COALESCE(used_quantity,0)) > 0')
-                    ->orderBy('scanned_at', 'asc')
-                    ->lockForUpdate()
-                    ->get();
+            $take = min($scan->quantity, $remaining);
 
-                Log::info("FIFO skany dla produktu {$productId}", [
-                    'scans_count' => $allScans->count()
-                ]);
-
-                $remaining = round($totalNeeded, 2);
-
-                foreach ($allScans as $scan) {
-                    if ($remaining <= 0) break;
-
-                    $available = round((float)$scan->quantity - (float)($scan->used_quantity ?? 0), 2);
-                    if ($available <= 0) {
-                        Log::debug("Scan {$scan->id} ma 0 dostępne");
-                        continue;
-                    }
-
-                    $take = round(min($available, $remaining), 2);
-
-                    Log::info("→ Scan {$scan->id}: available={$available}, take={$take}, remaining_before={$remaining}");
-
-                    // zapis TMP rekordu
-                    $tmp = SpisProduktyTmp::create([
-                        'spis_id'    => $spis->id,
-                        'user_id'    => auth()->id(),
-                        'product_id' => $productId,
-                        'region_id'  => $spis->region_id,
-                        'produkt_skany_id' => $scan->id,
-                        'name'       => $scan->product->name ?? 'Brak nazwy',
-                        'price'      => $scan->price_history ?? 0,
-                        'quantity'   => $take,
-                        'unit'       => optional($scan->product->unit)->name ?? '-',
-                        'barcode'    => $scan->barcode,
-                        'scanned_at' => $scan->scanned_at,
-                        'added_at'   => now(),
-                    ]);
-
-                    Log::info("Dodano TMP rekord", $tmp->toArray());
-                    $createdCount++;
-
-                    // aktualizacja użytych ilości
-                    $scan->used_quantity = round((float)($scan->used_quantity ?? 0) + $take, 2);
-                    $scan->save();
-
-                    Log::info("Zaktualizowano used_quantity dla scan {$scan->id}", [
-                        'used_quantity' => $scan->used_quantity
-                    ]);
-
-                    $remaining = round($remaining - $take, 2);
-
-                    Log::info("Pozostało do przydzielenia dla produktu {$productId}", [
-                        'remaining' => $remaining
-                    ]);
-                }
-
-                if ($remaining > 0) {
-                    $productName = $allScans->first()->product->name ?? "ID {$productId}";
-                    Log::warning("Brakuje {$remaining} dla produktu {$productName}");
-                    session()->flash('warning',
-                        "Nie udało się przydzielić pełnej ilości dla produktu '{$productName}'. Brakuje {$remaining} szt.");
-                }
-
-                Log::info("→ END FIFO dla produktu {$productId}");
-            }, 5);
-        } catch (\Throwable $e) {
-            Log::error("Błąd podczas addProdukty transaction", [
-                'product_id' => $productId,
-                'error' => $e->getMessage()
+            // 🧾 dodaj do spisu tymczasowego
+            SpisProduktyTmp::create([
+                'spis_id'          => $spis->id,
+                'user_id'          => $userId,
+                'product_id'       => $productId,
+                'region_id'        => $regionId,
+                'produkt_skany_id' => $scan->id,
+                'name'             => $scan->product->name ?? 'Brak nazwy',
+                'price'            => $scan->price_history ?? 0,
+                'quantity'         => $take,
+                'unit'             => optional($scan->product->unit)->name ?? '-',
+                'barcode'          => $scan->barcode,
+                'scanned_at'       => $scan->scanned_at,
+                'added_at'         => now(),
             ]);
+
+            // 🔄 zmniejsz dostępne ilości
+            $scan->decrement('quantity', $take);
+            $remaining -= $take;
+            $addedCount++;
+        }
+
+        if ($remaining > 0) {
+            Log::warning("Nie wystarczyło produktu ID {$productId} do pełnego dodania ({$remaining} brakujących jednostek)");
         }
     }
 
-    Log::info('--- END addProdukty ---', ['created_tmp' => $createdCount]);
-
-    return back()->with('success',
-        "Produkty dodane do tabeli tymczasowej według FIFO. Dodano {$createdCount} rekordów.");
+    return back()->with('success', "Dodano {$addedCount} pozycji do spisu (FIFO).");
 }
 
 
@@ -326,6 +254,62 @@ public function addProdukty(Request $request, SpisZNatury $spis)
 
 
 
+
+
+
+
+
+
+public function filterProdukty(Request $request, SpisZNatury $spis)
+{
+    $request->validate([
+        'date_from' => 'nullable|date',
+        'date_to'   => 'nullable|date',
+    ]);
+
+    $userId = auth()->id();
+    $regionId = $spis->region_id;
+
+    // 🧹 wyczyść poprzedni bufor
+    DB::table('produkty_filtr_tmp')
+        ->where('user_id', $userId)
+        ->where('region_id', $regionId)
+        ->delete();
+
+    // 🔎 pobierz dane po filtrze
+    $query = ProduktSkany::with('product.unit')
+        ->where('region_id', $regionId);
+
+    if ($request->filled('date_from')) {
+        $query->whereDate('scanned_at', '>=', $request->date_from);
+    }
+    if ($request->filled('date_to')) {
+        $query->whereDate('scanned_at', '<=', $request->date_to);
+    }
+
+    $filtered = $query->get();
+
+    // 💾 zapisz do bufora tymczasowego
+    foreach ($filtered as $scan) {
+        DB::table('produkty_filtr_tmp')->insert([
+            'user_id'          => $userId,
+            'region_id'        => $regionId,
+            'product_id'       => $scan->product_id,
+            'produkt_skany_id' => $scan->id,
+            'name'             => $scan->product->name ?? 'Brak nazwy',
+            'price'            => $scan->price_history ?? 0,
+            'quantity'         => round($scan->quantity, 2),
+            'unit'             => optional($scan->product->unit)->name ?? '-',
+            'barcode'          => $scan->barcode,
+            'scanned_at'       => $scan->scanned_at,
+            'created_at'       => now(),
+            'updated_at'       => now(),
+        ]);
+    }
+
+    return redirect()->route('spisy.produkty', $spis->id)
+        ->with('success', "Zapisano {$filtered->count()} rekordów do bufora filtra.");
+}
 
 
 

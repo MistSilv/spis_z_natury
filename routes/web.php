@@ -57,6 +57,8 @@ Route::get('/spisy/{spis}/produkty', [SpisZNaturyController::class, 'showProdukt
 Route::post('/spisy/{spis}/produkty/add', [App\Http\Controllers\SpisZNaturyController::class, 'addProdukty'])
     ->name('spisy.produkty.add');
 
+    Route::post('/spisy/{spis}/produkty/filter', [SpisZNaturyController::class, 'filterProdukty'])->name('spisy.produkty.filter');
+
 Route::get('/spisy/{spis}/produkty/spis', [App\Http\Controllers\SpisZNaturyController::class, 'showSpisProdukty'])
     ->name('spisy.spis_produkty');
 

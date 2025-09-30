@@ -8,32 +8,44 @@
         @endif
 
         <!-- Formularz filtrowania -->
-        <form method="GET" action="{{ route('spisy.produkty', $spis->id) }}" class="mb-6 flex gap-4 items-end flex-wrap" id="filterForm">
+      <!-- Formularz filtrowania i zapisu do bufora -->
+        <form method="POST"
+            action="{{ route('spisy.produkty.filter', $spis->id) }}"
+            class="mb-6 flex gap-4 items-end flex-wrap"
+            id="filterForm">
+            @csrf
+
             <div>
                 <label class="block text-sky-700 font-medium">Zakres dat</label>
                 <div class="input-with-icon">
                     <span class="icon">📅</span>
-                    <input type="text" id="daterange"
+                    <input type="text"
+                        id="daterange"
                         data-server-from="{{ request('date_from') }}"
                         data-server-to="{{ request('date_to') }}"
                         class="p-2 rounded bg-slate-800 text-white border border-cyan-600 cursor-pointer"
                         autocomplete="off"
-                        value="{{ request('date_from') && request('date_to') ? \Carbon\Carbon::parse(request('date_from'))->format('m/d/Y').' - '. \Carbon\Carbon::parse(request('date_to'))->format('m/d/Y') : '' }}">
+                        value="{{ request('date_from') && request('date_to') 
+                                    ? \Carbon\Carbon::parse(request('date_from'))->format('m/d/Y').' - '. \Carbon\Carbon::parse(request('date_to'))->format('m/d/Y') 
+                                    : '' }}">
                 </div>
+
+                <!-- ukryte pola dla backendu -->
                 <input type="hidden" name="date_from" class="date-from" value="{{ request('date_from') }}">
                 <input type="hidden" name="date_to" class="date-to" value="{{ request('date_to') }}">
             </div>
 
             <button type="submit"
                     class="px-4 py-2 bg-sky-800 hover:bg-sky-600 rounded text-white font-bold shadow-md">
-                Filtruj
+                Filtruj i zapisz tymczasowo
             </button>
 
             <a href="{{ route('spisy.produkty', $spis->id) }}"
-               class="px-4 py-2 bg-slate-800 hover:bg-slate-600 rounded text-white font-bold shadow-md">
+            class="px-4 py-2 bg-slate-800 hover:bg-slate-600 rounded text-white font-bold shadow-md">
                 Wyczyść
             </a>
         </form>
+
 
         <!-- Przycisk dodania wyfiltrowanych -->
         <form method="POST" action="{{ route('spisy.produkty.add', $spis->id) }}" class="mb-8" id="addForm">
