@@ -251,7 +251,7 @@ public function addProdukty(Request $request, SpisZNatury $spis)
                         'region_id'  => $spis->region_id,
                         'produkt_skany_id' => $scan->id,
                         'name'       => $scan->product->name ?? 'Brak nazwy',
-                        'price'      => $scan->product->price ?? 0,
+                        'price'      => $scan->price_history ?? 0,
                         'quantity'   => $take,
                         'unit'       => optional($scan->product->unit)->name ?? '-',
                         'barcode'    => $scan->barcode,

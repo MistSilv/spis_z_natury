@@ -26,6 +26,7 @@
                     <form method="POST" action="{{ route('spisy.reset', $unfinished->spis_id) }}">
                         @csrf
                         <button type="submit"
+                                id="reset-btn"
                                 class="px-4 py-2 bg-red-800 hover:bg-red-600 rounded text-white font-bold shadow-md">
                             ❌ Zacznij od zera
                         </button>
@@ -63,16 +64,23 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const restoreLink = document.getElementById("restore-link");
+            const resetBtn = document.getElementById("reset-btn");
             const spisName = document.getElementById("spis-name");
 
-            if (restoreLink && spisName) {
-                restoreLink.addEventListener("click", function (e) {
-                    if (!spisName.value.trim()) {
-                        e.preventDefault();
-                        alert("⚠️ Podaj nazwę spisu, zanim przywrócisz dane!");
-                        spisName.focus();
-                    }
-                });
+            function checkName(e) {
+                if (!spisName.value.trim()) {
+                    e.preventDefault();
+                    alert("⚠️ Podaj nazwę spisu, zanim wykonasz tę akcję!");
+                    spisName.focus();
+                }
+            }
+
+            if (restoreLink) {
+                restoreLink.addEventListener("click", checkName);
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener("click", checkName);
             }
         });
     </script>
