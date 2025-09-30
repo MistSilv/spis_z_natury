@@ -127,10 +127,19 @@ return new class extends Migration
             $table->id();
             $table->string('id_abaco')->nullable()->index();
             $table->string('name', 255)->collation('Latin1_General_100_CI_AS_SC_UTF8');
-            $table->decimal('price', 15, 2)->nullable();
             $table->timestamps();
             $table->foreignId('unit_id')->constrained('units')->cascadeOnDelete();
         });
+
+        Schema::create('product_prices_history', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->decimal('price', 15, 2);
+            $table->timestamp('changed_at')->useCurrent();
+        });
+
+            
+
 
         // EAN codes table
         Schema::create('barcodes', function (Blueprint $table) {
@@ -145,6 +154,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('region_id')->constrained('regions');
+            $table->decimal('price_history', 15, 2);
             $table->decimal('quantity', 15, 2)->default(1);
             $table->decimal('used_quantity', 15, 2)->default(0);
             $table->timestamp('scanned_at')->useCurrent();
