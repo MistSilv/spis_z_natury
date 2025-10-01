@@ -18,85 +18,69 @@ class ProduktSkanySeeder extends Seeder
         $units = DB::table('units')->pluck('code', 'id');
         $allProducts = Product::with(['barcodes', 'prices'])->get();
 
-        // Bieżący miesiąc
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth   = Carbon::now()->endOfMonth();
+        // --- USTAWIENIE ZAKRESU DAT ---
+        $fromDate = Carbon::create(2025, 5, 1, 0, 0, 0);
+        $toDate = Carbon::now()->subDay()->endOfDay();
+        //$toDate   = Carbon::create(2025, 9, 30, 23, 59, 59);
+        // --------------------------------
 
         $totalScans = 0;
+        $batch = [];
 
-        foreach ($regions as $regionCode => $region) {
-            $regionUsers = $users->where('region_id', $region->id);
+        // Pętla po miesiącach
+        for ($date = $fromDate->copy()->startOfMonth(); $date->lte($toDate); $date->addMonth()) {
+            $monthStart = $date->copy()->startOfMonth();
+            $monthEnd   = $date->copy()->endOfMonth();
 
-            $activeCount = match($regionCode) {
-                'garmaz', 'piekarnia' => rand(1, min(3, $regionUsers->count())),
-                'sklep', 'magazyn'    => rand(3, min(6, $regionUsers->count())),
-                default => 0
-            };
+            // Liczba skanów w tym miesiącu
+            $scansThisMonth = rand(800, 1400);
 
-            if ($activeCount === 0) continue;
+            for ($i = 0; $i < $scansThisMonth; $i++) {
+                $region = $regions->random();
+                $regionUsers = $users->where('region_id', $region->id);
+                if ($regionUsers->isEmpty()) continue;
+                $user = $regionUsers->random();
 
-            $activeUsers = $regionUsers->random($activeCount);
+                $product = $allProducts->random();
+                $unitCode = $units[$product->unit_id] ?? 'szt';
+                $quantity = in_array($unitCode, ['szt', 'opak'])
+                    ? (float) rand(1, 20)
+                    : (float) round(rand(1, 5000) / 100, 2);
 
-            foreach ($activeUsers as $user) {
-                $scansCount = 0;
-                $productScans = [];
+                // Daty w ostatnich 3-5 dniach miesiąca
+                $day = $monthEnd->day - rand(0, min(4, $monthEnd->day - 1));
+                $hour = rand(8, 18);
+                $minute = rand(0, 59);
+                $second = rand(0, 59);
+                $scannedAt = Carbon::create($monthEnd->year, $monthEnd->month, $day, $hour, $minute, $second);
 
-                while ($scansCount < 100) {
-                    $product = $allProducts->random();
+                // Cena produktu obowiązująca w dniu skanu
+                $lastPrice = $product->prices()
+                    ->where('changed_at', '<=', $scannedAt)
+                    ->orderBy('changed_at', 'desc')
+                    ->value('price') ?? 0;
 
-                    if (!isset($productScans[$product->id])) {
-                        $productScans[$product->id] = 0;
-                    }
-                    if ($productScans[$product->id] >= 3) {
-                        continue;
-                    }
+                $batch[] = [
+                    'product_id'    => $product->id,
+                    'user_id'       => $user->id,
+                    'region_id'     => $region->id,
+                    'quantity'      => $quantity,
+                    'price_history' => $lastPrice,
+                    'scanned_at'    => $scannedAt,
+                    'barcode'       => $product->barcodes->first()->barcode ?? null,
+                ];
 
-                    $unitCode = $units[$product->unit_id] ?? 'szt';
-                    $quantity = in_array($unitCode, ['szt', 'opak'])
-                        ? (float) rand(1, 20)
-                        : (float) round(rand(1, 5000) / 100, 2);
-
-                    // Losowa data w bieżącym miesiącu
-                    $day    = rand(1, $startOfMonth->daysInMonth);
-                    $hour   = rand(8, 18);
-                    $minute = rand(0, 59);
-                    $second = rand(0, 59);
-                    $scannedAt = Carbon::create(
-                        $startOfMonth->year,
-                        $startOfMonth->month,
-                        $day,
-                        $hour,
-                        $minute,
-                        $second
-                    );
-
-                    // Pobranie ostatniej ceny z historii cen
-                    $lastPrice = $product->prices()->orderBy('changed_at', 'desc')->value('price');
-
-                    $batch[] = [
-                        'product_id'    => $product->id,
-                        'user_id'       => $user->id,
-                        'region_id'     => $region->id,
-                        'quantity'      => $quantity,
-                        'price_history' => $lastPrice ?? 0, // jeśli brak ceny, ustawiamy 0
-                        'scanned_at'    => $scannedAt,
-                        'barcode'       => $product->barcodes->first()->barcode ?? null,
-                    ];
-
-                    $productScans[$product->id]++;
-                    $scansCount++;
-                    $totalScans++;
-                }
+                $totalScans++;
             }
         }
 
-        // Wstawiamy paczkami, aby uniknąć problemów z dużą ilością rekordów
+        // Wstawiamy paczkami
         if (!empty($batch)) {
             foreach (array_chunk($batch, 150) as $chunk) {
                 DB::table('produkt_skany')->insert($chunk);
             }
         }
 
-        $this->command->info("Seeder End. Added {$totalScans} skanów dla bieżącego miesiąca.");
+        $this->command->info("Seeder End. Added {$totalScans} skanów w zakresie od {$fromDate} do {$toDate}.");
     }
 }

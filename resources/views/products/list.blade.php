@@ -25,7 +25,7 @@
                     @forelse($products as $product)
                         <tr class="even:bg-black hover:bg-neutral-800/70 transition">
                             <td class="px-4 py-2">{{ $product->name }}</td>
-                            <td class="px-4 py-2">{{ $product->price }}</td>
+                            <td class="px-4 py-2">{{ $product->latestPrice ? number_format($product->latestPrice->price, 2, '.', '') : '-' }}</td>
                             <td class="px-4 py-2">{{ $product->unit->name ?? '-' }}</td>
                             <td class="px-4 py-2">
                                 {{ $product->barcodes->pluck('barcode')->implode(', ') ?: '-' }}

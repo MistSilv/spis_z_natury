@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductPriceHistory;
 use App\Models\Unit;
 use App\Models\Barcode;
 use Illuminate\Http\Request;
@@ -40,15 +41,25 @@ class ProductController extends Controller
             'barcodes.*' => 'nullable|string|max:13'
         ]);
 
-        $product = Product::create($validated);
+        // Tworzymy produkt (bez ceny)
+        $product = Product::create([
+            'name'     => $validated['name'],
+            'unit_id'  => $validated['unit_id'],
+            'id_abaco' => $validated['id_abaco'] ?? null,
+        ]);
 
+        // Dodajemy cenę do historii
+        if (!empty($validated['price'])) {
+            $product->prices()->create([
+                'price' => $validated['price']
+            ]);
+        }
+
+        // Dodajemy kody EAN
         if ($request->filled('barcodes')) {
             foreach ($request->barcodes as $barcode) {
                 if ($barcode) {
-                    Barcode::create([
-                        'product_id' => $product->id,
-                        'barcode'    => $barcode,
-                    ]);
+                    $product->barcodes()->create(['barcode' => $barcode]);
                 }
             }
         }
@@ -88,9 +99,24 @@ class ProductController extends Controller
             'barcodes.*' => 'nullable|string|max:13'
         ]);
 
-        $product->update($validated);
+        // Aktualizacja podstawowych danych produktu
+        $product->update([
+            'name'     => $validated['name'],
+            'unit_id'  => $validated['unit_id'],
+            'id_abaco' => $validated['id_abaco'] ?? null,
+        ]);
 
-        // odśwież kody EAN
+        // Dodajemy nową cenę do historii tylko jeśli się zmieniła
+        if (!empty($validated['price'])) {
+            $latestPrice = $product->latestPrice?->price ?? null;
+            if ($latestPrice !== (float)$validated['price']) {
+                $product->prices()->create([
+                    'price' => $validated['price']
+                ]);
+            }
+        }
+
+        // Odświeżamy kody EAN: usuwamy stare i dodajemy nowe
         $product->barcodes()->delete();
         if ($request->filled('barcodes')) {
             foreach ($request->barcodes as $barcode) {
@@ -102,6 +128,8 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')->with('success', 'Produkt zaktualizowany.');
     }
+
+
 
     /**
      * Usuń produkt
