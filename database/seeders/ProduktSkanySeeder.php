@@ -20,7 +20,8 @@ class ProduktSkanySeeder extends Seeder
 
         // --- USTAWIENIE ZAKRESU DAT ---
         $fromDate = Carbon::create(2025, 5, 1, 0, 0, 0);
-        $toDate   = Carbon::create(2025, 10, 31, 23, 59, 59);
+        $toDate = Carbon::now()->subDay()->endOfDay();
+        //$toDate   = Carbon::create(2025, 9, 30, 23, 59, 59);
         // --------------------------------
 
         $totalScans = 0;
