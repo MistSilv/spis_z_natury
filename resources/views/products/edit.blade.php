@@ -20,10 +20,11 @@
             <div class="mb-4">
                 <label for="price" class="block font-medium mb-1 text-gray-200">Cena</label>
                 <input type="number" name="price" id="price" step="0.01" 
-                       value="{{ old('price', $product->price) }}" 
-                       class="w-full border border-slate-700 bg-slate-800 text-gray-100 p-2 rounded">
+                    value="{{ old('price', $product->latestPrice?->price ?? '') }}" 
+                    class="w-full border border-slate-700 bg-slate-800 text-gray-100 p-2 rounded">
                 @error('price') <p class="text-red-600">{{ $message }}</p> @enderror
             </div>
+
 
             {{-- Jednostka --}}
             <div class="mb-4">
