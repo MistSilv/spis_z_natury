@@ -23,6 +23,15 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
+            $user = auth()->user();
+
+            // Pracownik z przypisanym regionem → od razu do skanera
+            if ($user->role === 'pracownik' && $user->region_id) {
+                return redirect()->route('produkt_skany.index');
+            }
+
+            // Pozostali użytkownicy → standardowo
             return redirect()->route('welcome');
         }
 

@@ -44,6 +44,13 @@ class Product extends Model
         return $finalPrice;
     }
 
+    public function isUsed(): bool
+    {
+        return $this->produktSkany()->exists()
+            || \DB::table('spis_produkty')->where('name', $this->name)->exists()
+            || \DB::table('spis_produkty_tmp')->where('product_id', $this->id)->exists()
+            || \DB::table('produkty_filtr_tmp')->where('product_id', $this->id)->exists();
+    }
 
 
 }

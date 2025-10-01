@@ -16,6 +16,10 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::with('unit', 'barcodes')->orderByDesc('id')->paginate(100);
+
+        foreach ($products as $product) {
+            $product->canBeDeleted = !$product->isUsed();
+        }
         return view('products.list', compact('products'));
     }
 

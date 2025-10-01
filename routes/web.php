@@ -74,6 +74,9 @@ Route::get('/products/create', [ProductController::class, 'create'])->name('prod
 // zapis nowego produktu
 Route::post('/products', [ProductController::class, 'store'])->name('products.store');
 
+// usuwanie produktu
+Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
 // formularz edycji
 Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
 

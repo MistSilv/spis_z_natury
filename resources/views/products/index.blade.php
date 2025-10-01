@@ -44,7 +44,7 @@
                 <tr class="even:bg-black hover:bg-neutral-800/70 transition">
                     <td class="p-4">{{ $skan->id }}</td>
                     <td class="p-4">{{ $skan->product->name }}</td>
-                    <td class="p-4">{{ $skan->quantity }}</td>
+                    <td class="p-4">{{ number_format($skan->quantity, 2, '.', '') }}</td>
                     <td class="p-4">{{ $skan->barcode ?? '-' }}</td>
                     <td class="p-4">{{ $skan->scanned_at->format('Y-m-d H:i') }}</td>
                     <td class="p-4 flex gap-2">
