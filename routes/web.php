@@ -8,6 +8,8 @@ use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\SpisZNaturyController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SpisPdfController;
+use App\Http\Controllers\SpisProduktyTmpController;
+
 
 // Przekierowanie ze strony głównej na /login
 Route::get('/', function () {
@@ -91,9 +93,26 @@ Route::post('/spisy/{spis}/produkty/finalize', [SpisZNaturyController::class, 'f
     Route::delete('/spisy/{spis}/produkty-temp/clear', [SpisZNaturyController::class, 'clearTemp'])
     ->name('spisy.produkty.clear');
 
+
+
+
     Route::post('/spisy/{spis}/produkty-temp/{produkt}/update',
-    [\App\Http\Controllers\SpisProduktyTmpController::class, 'update']
+    [SpisProduktyTmpController::class, 'update']
 )->name('spisy.produkty.temp.update');
+
+Route::patch('/spisy/{spis}/produkty-filtr/{produkt}/quantity', 
+    [SpisProduktyTmpController::class, 'updateQuantity']
+)->name('spisy.produkty.updateQuantity');
+
+Route::delete('/spisy/{spis}/produkty-filtr/{produkt}', 
+    [SpisProduktyTmpController::class, 'destroyFromFilter'])->name('produkty-filtr.destroy');
+
+
+
+
+
+
+
 
 Route::get('/spisy/{spis}/pdf', [SpisPdfController::class, 'export'])->name('spisy.export.pdf');
 
