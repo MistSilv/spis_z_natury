@@ -47,6 +47,14 @@ class SpisProduktyTmpController extends Controller
         return back()->with('success', "Ilość produktu '{$produkt->name}' została zaktualizowana.");
     }
 
+    public function destroyFromFilter(SpisZNatury $spis, ProduktFiltrTmp $produkt)
+    {
+        $produkt->delete();
+
+        return back()->with('success', "Produkt '{$produkt->name}' został usunięty z filtrów.");
+    }
+
+
 
 
 

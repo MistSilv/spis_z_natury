@@ -387,6 +387,29 @@ public function addProdukty(Request $request, SpisZNatury $spis)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //wolny kurdystan duplikatowy
 public function filterProdukty(Request $request, SpisZNatury $spis)
 {

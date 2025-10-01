@@ -101,6 +101,9 @@ Route::patch('/spisy/{spis}/produkty-filtr/{produkt}/quantity',
     [SpisProduktyTmpController::class, 'updateQuantity']
 )->name('spisy.produkty.updateQuantity');
 
+Route::delete('/spisy/{spis}/produkty-filtr/{produkt}', 
+    [SpisProduktyTmpController::class, 'destroyFromFilter'])->name('produkty-filtr.destroy');
+
 
 
 
