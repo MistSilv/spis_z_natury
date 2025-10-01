@@ -52,62 +52,126 @@ class SpisZNaturyController extends Controller
             ->with('success', 'Spis utworzony. Poniżej produkty dla wybranego regionu.');
     }
 
+
+
+    //pojebie mnie z tą funkcją , jak coś to łączy parę na raz, żeby oszczędzić użytkownikowi 3 sekundy xd
     public function showProdukty(SpisZNatury $spis, Request $request)
-    {
-        // Sprawdź czy są niezatwierdzone TMP dla usera
-        $unfinished = SpisProduktyTmp::where('spis_id', $spis->id)
-            ->where('user_id', auth()->id())
-            ->exists();
+{
+    $userId = auth()->id();
+    $regionId = $spis->region_id;
 
-        // Produkty zeskanowane
-        $produkty = ProduktSkany::with(['product.unit'])
-            ->where('region_id', $spis->region_id);
+    $startOfMonth = now()->startOfMonth();
+    $endOfMonth = now()->endOfMonth();
 
-        if ($request->filled('date_from')) {
-            $produkty->whereDate('scanned_at', '>=', $request->date_from);
+    // Sprawdź, czy użytkownik wcześniej wyczyścił bufor
+    $filterCleared = session('filter_cleared', false);
+
+    $hasCurrentMonth = DB::table('produkty_filtr_tmp')
+        ->where('user_id', $userId)
+        ->where('region_id', $regionId)
+        ->whereBetween('scanned_at', [$startOfMonth, $endOfMonth])
+        ->exists();
+
+    // 🔹 tylko jeśli bufor nie był wyczyszczony i nie ma wpisów w tym miesiącu
+    if (!$filterCleared && !$hasCurrentMonth) {
+        $scans = ProduktSkany::with('product.unit')
+            ->where('region_id', $regionId)
+            ->whereBetween('scanned_at', [$startOfMonth, $endOfMonth])
+            ->get();
+
+        foreach ($scans as $scan) {
+            $name = $scan->product->name ?? 'Brak nazwy';
+            $price = $scan->price_history ?? 0;
+            $quantity = round($scan->quantity, 2);
+            $unit = optional($scan->product->unit)->name ?? '-';
+
+            $existing = DB::table('produkty_filtr_tmp')
+                ->where('user_id', $userId)
+                ->where('region_id', $regionId)
+                ->where('name', $name)
+                ->where('price', $price)
+                ->first();
+
+            if ($existing) {
+                DB::table('produkty_filtr_tmp')
+                    ->where('id', $existing->id)
+                    ->update([
+                        'quantity' => $existing->quantity + $quantity,
+                        'updated_at' => now(),
+                    ]);
+            } else {
+                DB::table('produkty_filtr_tmp')->insert([
+                    'user_id' => $userId,
+                    'region_id' => $regionId,
+                    'product_id' => $scan->product_id,
+                    'produkt_skany_id' => $scan->id,
+                    'name' => $name,
+                    'price' => $price,
+                    'quantity' => $quantity,
+                    'unit' => $unit,
+                    'barcode' => $scan->barcode,
+                    'scanned_at' => $scan->scanned_at,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
-
-        if ($request->filled('date_to')) {
-            $produkty->whereDate('scanned_at', '<=', $request->date_to);
-        }
-
-        $produkty = $produkty->orderBy('scanned_at', 'desc')
-            ->paginate(50)
-            ->appends($request->all());
-
-        // Produkty tymczasowe (do edycji)
-        $produktySpisu = SpisProduktyTmp::with('user')
-            ->where('spis_id', $spis->id)
-            ->orderBy('added_at', 'asc')
-            ->paginate(50, ['*'], 'produktyTmpPage');
-
-        return view('spisy.produkty', compact('spis', 'produkty', 'produktySpisu', 'unfinished'));
     }
+
+    $produkty = DB::table('produkty_filtr_tmp')
+        ->where('user_id', $userId)
+        ->where('region_id', $regionId)
+        ->orderBy('name')
+        ->paginate(50);
+
+    $produktySpisu = SpisProduktyTmp::with('user')
+        ->where('spis_id', $spis->id)
+        ->orderBy('added_at', 'asc')
+        ->paginate(50, ['*'], 'produktyTmpPage');
+
+    return view('spisy.produkty', compact('spis', 'produkty', 'produktySpisu'));
+}
+
+
+
+
+
+
 
      // idioto odporna funckja w trakcie kraftowania spisu 
    public function reset(SpisZNatury $spis)
-{
-    DB::transaction(function () use ($spis) {
-        // Pobierz wszystkie TMP produkty z tego spisu
-        $produktyTmp = SpisProduktyTmp::where('spis_id', $spis->id)->get();
+    {
+        $userId = auth()->id();
+        $regionId = $spis->region_id;
 
-        foreach ($produktyTmp as $tmp) {
-            if ($tmp->produkt_skany_id) {
-                // Cofnij zużycie w produkt_skany
-                ProduktSkany::where('id', $tmp->produkt_skany_id)
-                    ->update([
-                        'used_quantity' => DB::raw("GREATEST(0, used_quantity - {$tmp->quantity})")
-                    ]);
+        DB::transaction(function () use ($spis, $userId, $regionId) {
+            // Pobierz wszystkie TMP produkty z tego spisu
+            $produktyTmp = SpisProduktyTmp::where('spis_id', $spis->id)->get();
+
+            foreach ($produktyTmp as $tmp) {
+                if ($tmp->produkt_skany_id) {
+                    // Cofnij zużycie w produkt_skany
+                    ProduktSkany::where('id', $tmp->produkt_skany_id)
+                        ->update([
+                            'used_quantity' => DB::raw("GREATEST(0, used_quantity - {$tmp->quantity})")
+                        ]);
+                }
             }
-        }
 
-        // Usuń wpisy tymczasowe
-        SpisProduktyTmp::where('spis_id', $spis->id)->delete();
-    });
+            // Usuń wpisy tymczasowe dla spisu
+            SpisProduktyTmp::where('spis_id', $spis->id)->delete();
 
-    return redirect()->route('spisy.produkty', $spis->id)
-        ->with('success', 'Spis został wyczyszczony i ilości przywrócone.');
-}
+            // 🔹 Dodatkowo usuń dane filtra tymczasowego dla użytkownika i regionu
+            DB::table('produkty_filtr_tmp')
+                ->where('user_id', $userId)
+                ->where('region_id', $regionId)
+                ->delete();
+        });
+
+        return redirect()->route('spisy.produkty', $spis->id)
+            ->with('success', 'Spis został wyczyszczony, ilości przywrócone, a dane filtra tymczasowego usunięte.');
+    }
+
 
 
 
@@ -234,32 +298,7 @@ public function addProdukty(Request $request, SpisZNatury $spis)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//wolny kurdystan duplikatowy
 public function filterProdukty(Request $request, SpisZNatury $spis)
 {
     $request->validate([
@@ -270,7 +309,10 @@ public function filterProdukty(Request $request, SpisZNatury $spis)
     $userId = auth()->id();
     $regionId = $spis->region_id;
 
-    // 🧹 wyczyść poprzedni bufor
+    // 🔹 Reset flagi "wyczyszczono"
+    session()->forget('filter_cleared');
+
+    // 🧹 wyczyść poprzedni bufor użytkownika dla tego regionu
     DB::table('produkty_filtr_tmp')
         ->where('user_id', $userId)
         ->where('region_id', $regionId)
@@ -289,27 +331,95 @@ public function filterProdukty(Request $request, SpisZNatury $spis)
 
     $filtered = $query->get();
 
-    // 💾 zapisz do bufora tymczasowego
+    // 💾 zapisz do bufora tymczasowego z sumowaniem po nazwie i cenie
     foreach ($filtered as $scan) {
-        DB::table('produkty_filtr_tmp')->insert([
-            'user_id'          => $userId,
-            'region_id'        => $regionId,
-            'product_id'       => $scan->product_id,
-            'produkt_skany_id' => $scan->id,
-            'name'             => $scan->product->name ?? 'Brak nazwy',
-            'price'            => $scan->price_history ?? 0,
-            'quantity'         => round($scan->quantity, 2),
-            'unit'             => optional($scan->product->unit)->name ?? '-',
-            'barcode'          => $scan->barcode,
-            'scanned_at'       => $scan->scanned_at,
-            'created_at'       => now(),
-            'updated_at'       => now(),
-        ]);
+        $name = $scan->product->name ?? 'Brak nazwy';
+        $price = $scan->price_history ?? 0;
+        $quantity = round($scan->quantity, 2);
+        $unit = optional($scan->product->unit)->name ?? '-';
+
+        $existing = DB::table('produkty_filtr_tmp')
+            ->where('user_id', $userId)
+            ->where('region_id', $regionId)
+            ->where('name', $name)
+            ->where('price', $price)
+            ->first();
+
+        if ($existing) {
+            DB::table('produkty_filtr_tmp')
+                ->where('id', $existing->id)
+                ->update([
+                    'quantity' => $existing->quantity + $quantity,
+                    'updated_at' => now(),
+                ]);
+        } else {
+            DB::table('produkty_filtr_tmp')->insert([
+                'user_id' => $userId,
+                'region_id' => $regionId,
+                'product_id' => $scan->product_id,
+                'produkt_skany_id' => $scan->id,
+                'name' => $name,
+                'price' => $price,
+                'quantity' => $quantity,
+                'unit' => $unit,
+                'barcode' => $scan->barcode,
+                'scanned_at' => $scan->scanned_at,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     return redirect()->route('spisy.produkty', $spis->id)
-        ->with('success', "Zapisano {$filtered->count()} rekordów do bufora filtra.");
+        ->with('success', "Zapisano {$filtered->count()} rekordów (po zsumowaniu duplikatów wg nazwy i ceny) do bufora filtra.");
 }
+
+
+
+
+
+//filtracja dany delete 
+public function clearTemp(SpisZNatury $spis)
+{
+    $userId = auth()->id();
+    $regionId = $spis->region_id;
+
+    DB::table('produkty_filtr_tmp')
+        ->where('user_id', $userId)
+        ->where('region_id', $regionId)
+        ->delete();
+
+         // 🔹 Flaga w sesji: użytkownik wyczyścił bufor
+    session()->flash('filter_cleared', true);
+
+    return back()->with('success', 'Bufor tymczasowy został wyczyszczony.');
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -415,28 +525,53 @@ public function filterProdukty(Request $request, SpisZNatury $spis)
 
     public function finalizeProdukty(SpisZNatury $spis)
 {
-    DB::transaction(function () use ($spis) {
-        $produktyTmp = SpisProduktyTmp::where('spis_id', $spis->id)->get();
+    $userId = auth()->id();
+    $regionId = $spis->region_id;
 
+    DB::transaction(function () use ($spis, $userId, $regionId) {
+        // ✅ Pobierz produkty tymczasowe tylko tego użytkownika
+        $produktyTmp = SpisProduktyTmp::where('spis_id', $spis->id)
+            ->where('user_id', $userId)
+            ->get();
+
+        // 💾 Przenieś do spisu głównego
         foreach ($produktyTmp as $tmp) {
             SpisProdukty::create([
-                'spis_id'    => $spis->id,
-                'user_id'    => $tmp->user_id,
-                'name'       => $tmp->name,
-                'price'      => $tmp->price,
-                'quantity'   => $tmp->quantity,
-                'unit'       => $tmp->unit,
-                'barcode'    => $tmp->barcode,
-                'added_at'   => $tmp->added_at,
+                'spis_id'  => $spis->id,
+                'user_id'  => $tmp->user_id,
+                'name'     => $tmp->name,
+                'price'    => $tmp->price,
+                'quantity' => $tmp->quantity,
+                'unit'     => $tmp->unit,
+                'barcode'  => $tmp->barcode,
+                'added_at' => $tmp->added_at,
             ]);
         }
 
-        SpisProduktyTmp::where('spis_id', $spis->id)->delete();
+        // 🧹 Usuń tymczasowe dane użytkownika z tabeli spis_produkty_tmp
+        SpisProduktyTmp::where('spis_id', $spis->id)
+            ->where('user_id', $userId)
+            ->delete();
+
+        // 🧹 Usuń także dane z bufora filtrów (produkty_filtr_tmp)
+        DB::table('produkty_filtr_tmp')
+            ->where('user_id', $userId)
+            ->where('region_id', $regionId)
+            ->delete();
     });
 
     return redirect()->route('spisy.podsumowanie', $spis->id)
-        ->with('success', 'Produkty zostały przeniesione do spisu głównego i zapisane.');
+        ->with('success', 'Twoje produkty zostały przeniesione do spisu głównego, a dane tymczasowe usunięte.');
 }
+
+
+
+
+
+
+
+
+
 }
 
 

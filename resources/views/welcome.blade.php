@@ -17,7 +17,7 @@
         <div class="flex justify-center gap-6">
             <button onclick="window.location='{{ route('produkt_skany.index') }}'"
                 class="bg-sky-800 hover:bg-sky-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-cyan-800/50 transition">
-                Produkty 📝
+                Produkty 
             </button>
 
             <button onclick="window.location='{{ route('spisy.index') }}'"

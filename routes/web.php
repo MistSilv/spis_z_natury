@@ -85,6 +85,9 @@ Route::get('/spisy/{spis}/produkty-temp', [SpisZNaturyController::class, 'showTm
 Route::post('/spisy/{spis}/produkty/finalize', [SpisZNaturyController::class, 'finalizeProdukty'])
     ->name('spisy.produkty.finalize');
 
+    Route::delete('/spisy/{spis}/produkty-temp/clear', [SpisZNaturyController::class, 'clearTemp'])
+    ->name('spisy.produkty.clear');
+
     Route::post('/spisy/{spis}/produkty-temp/{produkt}/update',
     [\App\Http\Controllers\SpisProduktyTmpController::class, 'update']
 )->name('spisy.produkty.temp.update');

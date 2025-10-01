@@ -57,7 +57,7 @@
                 </div>
                 <button type="button" onclick="addEan()"
                         class="mt-2 px-3 py-1 bg-blue-800 hover:bg-blue-600 text-gray-100 rounded transition">
-                    + Dodaj EAN
+                    Dodaj EAN
                 </button>
             </div>
 

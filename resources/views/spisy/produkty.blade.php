@@ -7,47 +7,106 @@
             <p class="mb-6 text-green-800 font-semibold">{{ session('success') }}</p>
         @endif
 
-        <!-- Formularz filtrowania -->
-      <!-- Formularz filtrowania i zapisu do bufora -->
-        <form method="POST"
-            action="{{ route('spisy.produkty.filter', $spis->id) }}"
-            class="mb-6 flex gap-4 items-end flex-wrap"
-            id="filterForm">
-            @csrf
+    <!-- Formularz filtrowania i zapisu do bufora -->
+<div class="mb-6 flex gap-4 items-end flex-wrap">
+    <!-- FORMULARZ FILTROWANIA -->
+    <form id="filterForm"
+          method="POST"
+          action="{{ route('spisy.produkty.filter', $spis->id) }}"
+          class="flex gap-4 items-end">
+        @csrf
 
-            <div>
-                <label class="block text-sky-700 font-medium">Zakres dat</label>
-                <div class="input-with-icon">
-                    <span class="icon">📅</span>
-                    <input type="text"
-                        id="daterange"
-                        data-server-from="{{ request('date_from') }}"
-                        data-server-to="{{ request('date_to') }}"
-                        class="p-2 rounded bg-slate-800 text-white border border-cyan-600 cursor-pointer"
-                        autocomplete="off"
-                        value="{{ request('date_from') && request('date_to') 
-                                    ? \Carbon\Carbon::parse(request('date_from'))->format('m/d/Y').' - '. \Carbon\Carbon::parse(request('date_to'))->format('m/d/Y') 
-                                    : '' }}">
-                </div>
-
-                <!-- ukryte pola dla backendu -->
-                <input type="hidden" name="date_from" class="date-from" value="{{ request('date_from') }}">
-                <input type="hidden" name="date_to" class="date-to" value="{{ request('date_to') }}">
+        <div>
+            <label class="block text-sky-700 font-medium">Zakres dat</label>
+            <div class="input-with-icon">
+                <input type="text"
+                       id="daterange"
+                       data-server-from="{{ request('date_from') }}"
+                       data-server-to="{{ request('date_to') }}"
+                       class="p-2 rounded bg-slate-800 text-white border border-cyan-600 cursor-pointer"
+                       autocomplete="off"
+                       value="{{ request('date_from') && request('date_to')
+                            ? \Carbon\Carbon::parse(request('date_from'))->format('m/d/Y').' - '. \Carbon\Carbon::parse(request('date_to'))->format('m/d/Y')
+                            : '' }}">
             </div>
 
-            <button type="submit"
-                    class="px-4 py-2 bg-sky-800 hover:bg-sky-600 rounded text-white font-bold shadow-md">
-                Filtruj i zapisz tymczasowo
-            </button>
+            <input type="hidden" name="date_from" class="date-from" value="{{ request('date_from') }}">
+            <input type="hidden" name="date_to"   class="date-to"   value="{{ request('date_to') }}">
+        </div>
 
-            <a href="{{ route('spisy.produkty', $spis->id) }}"
-            class="px-4 py-2 bg-slate-800 hover:bg-slate-600 rounded text-white font-bold shadow-md">
-                Wyczyść
-            </a>
-        </form>
+        <button type="submit"
+                class="px-4 py-2 bg-sky-800 hover:bg-sky-600 rounded text-white font-bold shadow-md">
+            Filtruj i zapisz tymczasowo
+        </button>
+    </form>
+
+    <!-- ODDZIELNY FORMULARZ DO CZYSZCZENIA (DELETE) -->
+    <form id="clearForm"
+          method="POST"
+          action="{{ route('spisy.produkty.clear', $spis->id) }}">
+        @csrf
+        @method('DELETE')
+        <button type="submit"
+                onclick="return confirm('Czy na pewno chcesz wyczyścić bufor tymczasowy?')"
+                class="px-4 py-2 bg-slate-800 hover:bg-slate-600 rounded text-white font-bold shadow-md">
+            Wyczyść
+        </button>
+    </form>
+</div>
 
 
-        <!-- Przycisk dodania wyfiltrowanych -->
+
+
+
+    
+
+       <!-- ================== TABELA: produkty z filtra ================== -->
+<div class="mb-8">
+    <h2 class="text-xl font-bold text-sky-700 mb-2 border-b border-cyan-500 pb-1 ">
+        Produkty wyfiltrowane dla regionu {{ $spis->region->name }}
+    </h2>
+
+    <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-neutral-700 rounded-lg shadow-inner">
+        <table class="min-w-full text-left text-gray-300 border-collapse">
+            <thead class="sticky top-0 bg-neutral-900 text-sm text-white">
+                <tr>
+                    <th class="p-2">Produkt</th>
+                    <th class="p-2">Cena</th>
+                    <th class="p-2">Jednostka</th>
+                    <th class="p-2">Ilość</th>
+                    <th class="p-2">Kod kreskowy</th>
+                    <th class="p-2">Data skanu</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-700">
+                @forelse($produkty as $produkt)
+                    <tr class="even:bg-black hover:bg-neutral-800/70 transition">
+                        <td class="p-2">{{ $produkt->name ?? 'Brak nazwy' }}</td>
+                        <td class="p-2">{{ number_format($produkt->price, 2, '.', '') }}</td>
+                        <td class="p-2">{{ $produkt->unit ?? '-' }}</td>
+                        <td class="p-2">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
+                        <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
+                        <td class="p-2">{{ $produkt->scanned_at }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="p-2 text-center text-gray-400">
+                            Brak produktów do wyświetlenia
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginacja dla tabeli 1 -->
+    <div class="mt-2">
+        {{ $produkty->links() }}
+    </div>
+</div>
+
+    
+    <!-- Przycisk dodania wyfiltrowanych -->
         <form method="POST" action="{{ route('spisy.produkty.add', $spis->id) }}" class="mb-8" id="addForm">
             @csrf
             <input type="hidden" name="date_from" class="date-from" value="{{ request('date_from') }}">
@@ -57,46 +116,6 @@
                 ⊂(◉‿◉)つ Dodaj wyfiltrowane produkty do spisu
             </button>
         </form>
-
-        <!-- ================== TABELA: zeskanowane ================== -->
-        <div class="mb-8">
-            <h2 class="text-xl font-bold text-sky-700 mb-2 border-b border-cyan-500 pb-1 ">
-                Produkty zeskanowane dla regionu {{ $spis->region->name }}
-            </h2>
-
-            <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-neutral-700 rounded-lg shadow-inner">
-                <table class="min-w-full text-left text-gray-300 border-collapse">
-                    <thead class="sticky top-0 bg-neutral-900 text-sm text-white">
-                        <tr>
-                            <th class="p-2">Produkt</th>
-                            <th class="p-2">Cena</th>
-                            <th class="p-2">Jednostka</th>
-                            <th class="p-2">Ilość</th>
-                            <th class="p-2">Kod kreskowy</th>
-                            <th class="p-2">Data skanu</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-neutral-700">
-                        @foreach($produkty as $produkt)
-                            <tr class="even:bg-black hover:bg-neutral-800/70 transition">
-                                <td class="p-2">{{ $produkt->product->name ?? 'Brak nazwy' }}</td>
-                                <td class="p-2">{{ optional($produkt->product->latestPrice)->price ?? '-' }}</td>
-                                <td class="p-2">{{ $produkt->product->unit->name ?? '-' }}</td>
-                                <td class="p-2">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
-                                <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
-                                <td class="p-2">{{ $produkt->scanned_at }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Paginacja dla tabeli 1 -->
-            <div class="mt-2">
-                {{ $produkty->links() }}
-            </div>
-        </div>
-    
 
     <!-- ================== TABELA: tymczasowe ================== -->
     <div class="mb-8 mt-10">
@@ -175,7 +194,7 @@
         @csrf
         <button type="submit"
             class="px-4 py-2 bg-green-700 hover:bg-green-500 rounded text-white font-bold shadow-md">
-            ✅ Zatwierdź spis i przejdź do podsumowania
+            Zatwierdź spis i przejdź do podsumowania
         </button>
     </form>
 

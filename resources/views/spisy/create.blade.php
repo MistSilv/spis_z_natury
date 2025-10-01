@@ -19,7 +19,7 @@
                     <a href="{{ route('spisy.produkty', $unfinished->spis_id) }}"
                        id="restore-link"
                        class="px-4 py-2 bg-sky-800 hover:bg-sky-600 rounded text-white font-bold shadow-md">
-                        🔄 Przywróć dane
+                        Przywróć dane
                     </a>
 
                     <!-- Reset = czyszczenie TMP -->
@@ -28,7 +28,7 @@
                         <button type="submit"
                                 id="reset-btn"
                                 class="px-4 py-2 bg-red-800 hover:bg-red-600 rounded text-white font-bold shadow-md">
-                            ❌ Zacznij od zera
+                            Zacznij od zera
                         </button>
                     </form>
                 </div>
@@ -70,7 +70,7 @@
             function checkName(e) {
                 if (!spisName.value.trim()) {
                     e.preventDefault();
-                    alert("⚠️ Podaj nazwę spisu, zanim wykonasz tę akcję!");
+                    alert("Podaj nazwę spisu, zanim wykonasz tę akcję!");
                     spisName.focus();
                 }
             }
