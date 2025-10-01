@@ -55,20 +55,18 @@
 </div>
 
 
+   <!-- ================== TABELA: produkty z filtra ================== -->
+<div class="mb-8 mt-10" 
+     x-data="{ contextOpen:false, contextX:0, contextY:0, selectedId:null }"
+     @click.window="contextOpen = false">
 
-
-
-    
-
-       <!-- ================== TABELA: produkty z filtra ================== -->
-<div class="mb-8">
-    <h2 class="text-xl font-bold text-sky-700 mb-2 border-b border-cyan-500 pb-1 ">
+    <h2 class="text-xl font-bold text-sky-700 mb-2 border-b border-cyan-500 pb-1">
         Produkty wyfiltrowane dla regionu {{ $spis->region->name }}
     </h2>
 
     <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-neutral-700 rounded-lg shadow-inner">
         <table class="min-w-full text-left text-gray-300 border-collapse">
-            <thead class="sticky top-0 bg-neutral-900 text-sm text-white">
+            <thead class="sticky top-0 bg-neutral-900 text-sm text-white z-10">
                 <tr>
                     <th class="p-2">Produkt</th>
                     <th class="p-2">Cena</th>
@@ -80,7 +78,13 @@
             </thead>
             <tbody class="divide-y divide-neutral-700">
                 @forelse($produkty as $produkt)
-                    <tr class="even:bg-black hover:bg-neutral-800/70 transition">
+                    <tr class="even:bg-black hover:bg-neutral-800/70 transition cursor-context-menu"
+                        @contextmenu.prevent="
+                            contextOpen = true;
+                            contextX = $event.pageX;
+                            contextY = $event.pageY;
+                            selectedId = {{ $produkt->id }}
+                        ">
                         <td class="p-2">{{ $produkt->name ?? 'Brak nazwy' }}</td>
                         <td class="p-2">{{ number_format($produkt->price, 2, '.', '') }}</td>
                         <td class="p-2">{{ $produkt->unit ?? '-' }}</td>
@@ -99,11 +103,33 @@
         </table>
     </div>
 
-    <!-- Paginacja dla tabeli 1 -->
+    <!-- Paginacja -->
     <div class="mt-2">
         {{ $produkty->links() }}
     </div>
+
+    <!-- KONTEKSTOWE MENU: zmiana ilości -->
+    <template x-if="contextOpen">
+        <div class="absolute bg-neutral-800 border border-neutral-600 rounded-lg shadow-lg p-3 z-50"
+             :style="`top:${contextY}px; left:${contextX}px`"
+             @click.stop>
+           <form method="POST" 
+                :action="`/spisy/{{ $spis->id }}/produkty-filtr/${selectedId}/quantity`"
+                class="flex items-center gap-2">
+                @csrf
+                @method('PATCH')
+                <input type="number" name="quantity" step="0.01"
+                    placeholder="Nowa ilość"
+                    class="w-24 px-2 py-1 rounded bg-slate-900 border border-cyan-600 text-white text-sm" />
+                <button type="submit"
+                        class="px-2 py-1 bg-green-700 hover:bg-green-500 rounded text-white text-xs">
+                    💾 Zapisz
+                </button>
+            </form>
+        </div>
+    </template>
 </div>
+
 
     
     <!-- Przycisk dodania wyfiltrowanych -->
