@@ -15,14 +15,12 @@
                     Chcesz przywrócić dane czy zacząć od zera? 
                 </p>
                 <div class="flex gap-4">
-                    <!-- Przywrócenie = wejście do spisu -->
                     <a href="{{ route('spisy.produkty', $unfinished->spis_id) }}"
                        id="restore-link"
                        class="px-4 py-2 bg-sky-800 hover:bg-sky-600 rounded text-white font-bold shadow-md">
                         Przywróć dane
                     </a>
 
-                    <!-- Reset = czyszczenie TMP -->
                     <form method="POST" action="{{ route('spisy.reset', $unfinished->spis_id) }}">
                         @csrf
                         <button type="submit"

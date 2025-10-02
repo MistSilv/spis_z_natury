@@ -55,7 +55,10 @@ class SpisZNaturyController extends Controller
 
 
 
-    //pojebie mnie z tą funkcją , jak coś to łączy parę na raz, żeby oszczędzić użytkownikowi 3 sekundy xd
+    // pojebie mnie z tą funkcją , jak coś to łączy parę na raz, 
+    // żeby oszczędzić użytkownikowi 3 sekundy xd
+    //ogólnie do automatycznie dodaje wpisy z obecnego miesiąca do 
+    // filtra czyli tabelki tymczasowej
     public function showProdukty(SpisZNatury $spis, Request $request)
 {
     $userId = auth()->id();
@@ -73,7 +76,7 @@ class SpisZNaturyController extends Controller
         ->whereBetween('scanned_at', [$startOfMonth, $endOfMonth])
         ->exists();
 
-    // 🔹 tylko jeśli bufor nie był wyczyszczony i nie ma wpisów w tym miesiącu
+    // tylko jeśli bufor nie był wyczyszczony i nie ma wpisów w tym miesiącu
     if (!$filterCleared && !$hasCurrentMonth) {
         $scans = ProduktSkany::with('product.unit')
             ->where('region_id', $regionId)
@@ -133,12 +136,6 @@ class SpisZNaturyController extends Controller
     return view('spisy.produkty', compact('spis', 'produkty', 'produktySpisu'));
 }
 
-
-
-
-
-
-
      // idioto odporna funckja w trakcie kraftowania spisu 
    public function reset(SpisZNatury $spis)
     {
@@ -162,7 +159,7 @@ class SpisZNaturyController extends Controller
             // Usuń wpisy tymczasowe dla spisu
             SpisProduktyTmp::where('spis_id', $spis->id)->delete();
 
-            // 🔹 Dodatkowo usuń dane filtra tymczasowego dla użytkownika i regionu
+            // Dodatkowo usuń dane filtra tymczasowego dla użytkownika i regionu
             DB::table('produkty_filtr_tmp')
                 ->where('user_id', $userId)
                 ->where('region_id', $regionId)
@@ -173,55 +170,19 @@ class SpisZNaturyController extends Controller
             ->with('success', 'Spis został wyczyszczony, ilości przywrócone, a dane filtra tymczasowego usunięte.');
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//wardęga mniej brudów ma baxdela miał niż ta funkcja robi rzeczy xd
+// jeden z nielicznych kolosów Sylwestra Wardenki na Bakstona
+// ogólnie to pobiera sobie rekordy z tabeli filtra tymczasowego
+// i dla każdego z nich osobno robi FIFO w tabeli skany produktów
+// FIFO działa na zasadzie najstarszy skanowany produkt jest brany jako pierwszy
+// i z niego jest odejmowana ilość, jeśli ilość z tego skanu nie wystarcza
+// to bierze się kolejny najstarszy skan i tak dalej aż do wyczerpania potrzebnej ilości
+// jeśli nie uda się przydzielić pełnej ilości to jest komunikat w sesji
+// i jest to robione w transakcji żeby nie było problemów z równoczesnym dostępem
+// i żeby zawsze ilości się zgadzały
+// jeśli coś się sypnie to loguje błąd do logów
+// na końcu zwraca komunikat ile rekordów tymczasowych zostało dodanych
+// oraz ewentualne ostrzeżenia o brakach
+// ogólnie to pojebało mnie to wymyślająć ale działa i oszczędza w .... czasu użytkownikowi
 public function addProdukty(Request $request, SpisZNatury $spis)
 {
     Log::info('--- START addProdukty ---', [
@@ -230,7 +191,10 @@ public function addProdukty(Request $request, SpisZNatury $spis)
         'request' => $request->all(),
     ]);
 
-    // 1) pobieramy dane z tabeli produkty_filtr_tmp (filtr użytkownika)
+    // 1) pobieramy dane z tabeli produkty_filtr_tmp 
+    //   dla danego użytkownika i regionu
+    //  z opcjonalnym filtrem dat
+    // jeśli nie ma rekordów to zwracamy błąd
     $filteredQuery = ProduktFiltrTmp::with('product.unit')
         ->where('region_id', $spis->region_id)
         ->where('user_id', auth()->id());
@@ -253,7 +217,12 @@ public function addProdukty(Request $request, SpisZNatury $spis)
         return back()->with('error', 'Brak produktów w wybranym zakresie dat.');
     }
 
-    // 2) bierzemy dokładnie wartości z tabeli produkty_filtr_tmp (nie sumujemy!)
+    // 2) bierzemy dokładnie wartości z tabeli produkty_filtr_tmp 
+    //  które mają ilość > 0
+    //  i tworzymy z nich tablicę potrzebnych rekordów
+    // z sumowaniem ilości dla tych samych produktów
+    // żeby nie robić FIFO dla każdego skanu osobno
+    // tylko dla każdego produktu z sumą ilości
     $neededRecords = [];
     foreach ($filteredScans as $scan) {
         if ($scan->quantity > 0) {
@@ -276,6 +245,9 @@ public function addProdukty(Request $request, SpisZNatury $spis)
     $createdCount = 0;
 
     // 3) FIFO dla każdego rekordu osobno
+    //  w transakcji
+    //  z blokadą dla skanów produktów
+    //  żeby nie było problemów z równoczesnym dostępem
     foreach ($neededRecords as $record) {
         $productId   = $record['product_id'];
         $totalNeeded = $record['quantity'];
@@ -382,34 +354,6 @@ public function addProdukty(Request $request, SpisZNatury $spis)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //wolny kurdystan duplikatowy
 public function filterProdukty(Request $request, SpisZNatury $spis)
 {
@@ -421,16 +365,16 @@ public function filterProdukty(Request $request, SpisZNatury $spis)
     $userId = auth()->id();
     $regionId = $spis->region_id;
 
-    // 🔹 Reset flagi "wyczyszczono"
+    // Reset flagi "wyczyszczono"
     session()->forget('filter_cleared');
 
-    // 🧹 wyczyść poprzedni bufor użytkownika dla tego regionu
+    // wyczyść poprzedni bufor użytkownika dla tego regionu
     DB::table('produkty_filtr_tmp')
         ->where('user_id', $userId)
         ->where('region_id', $regionId)
         ->delete();
 
-    // 🔎 pobierz dane po filtrze
+    // pobierz dane po filtrze
     $query = ProduktSkany::with('product.unit')
         ->where('region_id', $regionId);
 
@@ -443,7 +387,7 @@ public function filterProdukty(Request $request, SpisZNatury $spis)
 
     $filtered = $query->get();
 
-    // 💾 zapisz do bufora tymczasowego z sumowaniem po nazwie i cenie
+    // zapisz do bufora tymczasowego z sumowaniem po nazwie i cenie
     foreach ($filtered as $scan) {
         $name = $scan->product->name ?? 'Brak nazwy';
         $price = $scan->price_history ?? 0;
@@ -487,10 +431,7 @@ public function filterProdukty(Request $request, SpisZNatury $spis)
 }
 
 
-
-
-
-//filtracja dany delete 
+// odkurzacz 
 public function clearTemp(SpisZNatury $spis)
 {
     $userId = auth()->id();
@@ -501,76 +442,10 @@ public function clearTemp(SpisZNatury $spis)
         ->where('region_id', $regionId)
         ->delete();
 
-         // 🔹 Flaga w sesji: użytkownik wyczyścił bufor
     session()->flash('filter_cleared', true);
 
     return back()->with('success', 'Bufor tymczasowy został wyczyszczony.');
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public function showTmpProdukty(SpisZNatury $spis)
     {
@@ -641,12 +516,10 @@ public function clearTemp(SpisZNatury $spis)
     $regionId = $spis->region_id;
 
     DB::transaction(function () use ($spis, $userId, $regionId) {
-        // ✅ Pobierz produkty tymczasowe tylko tego użytkownika
         $produktyTmp = SpisProduktyTmp::where('spis_id', $spis->id)
             ->where('user_id', $userId)
             ->get();
 
-        // 💾 Przenieś do spisu głównego
         foreach ($produktyTmp as $tmp) {
             SpisProdukty::create([
                 'spis_id'  => $spis->id,
@@ -660,12 +533,10 @@ public function clearTemp(SpisZNatury $spis)
             ]);
         }
 
-        // 🧹 Usuń tymczasowe dane użytkownika z tabeli spis_produkty_tmp
         SpisProduktyTmp::where('spis_id', $spis->id)
             ->where('user_id', $userId)
             ->delete();
 
-        // 🧹 Usuń także dane z bufora filtrów (produkty_filtr_tmp)
         DB::table('produkty_filtr_tmp')
             ->where('user_id', $userId)
             ->where('region_id', $regionId)
@@ -675,15 +546,6 @@ public function clearTemp(SpisZNatury $spis)
     return redirect()->route('spisy.podsumowanie', $spis->id)
         ->with('success', 'Twoje produkty zostały przeniesione do spisu głównego, a dane tymczasowe usunięte.');
 }
-
-
-
-
-
-
-
-
-
 }
 
 

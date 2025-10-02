@@ -80,9 +80,9 @@
                                 selectedIdFilter = {{ $produkt->id }}
                             ">
                             <td class="p-2">{{ $produkt->name ?? 'Brak nazwy' }}</td>
-                            <td class="p-2">{{ number_format($produkt->price, 2, '.', '') }}</td>
+                            <td class="p-2 font-semibold text-teal-600">{{ number_format($produkt->price, 2, '.', '') }}</td>
                             <td class="p-2">{{ $produkt->unit ?? '-' }}</td>
-                            <td class="p-2">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
+                            <td class="p-2 font-semibold text-emerald-600">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
                             <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
                             <td class="p-2">{{ $produkt->scanned_at }}</td>
                         </tr>
@@ -103,52 +103,66 @@
 
        <!-- KONTEKSTOWE MENU dla produktów wyfiltrowanych -->
 <template x-if="contextOpenFilter">
-    <div class="absolute bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl p-3 z-50 w-60"
+    <div class="absolute z-50"
          :style="`top:${contextYFilter}px; left:${contextXFilter}px`"
          @click.stop
          x-data="{ showEdit:false }">
 
-        <div class="flex flex-col gap-2">
+        <!-- Menu główne z tłem -->
+        <div class="flex flex-col gap-1 bg-gray-800 border border-gray-600 p-2 w-44 shadow-lg">
+            <!-- Przycisk Zmień ilość -->
             <button @click="showEdit = true"
-                class="px-4 py-2 text-sm font-medium text-gray-200 rounded-lg bg-gray-800 hover:bg-cyan-700 hover:text-white transition">
+                    class="w-full px-3 py-1 text-sm font-medium text-gray-100 bg-gray-700 hover:bg-cyan-600 hover:text-white transition duration-200">
                 Zmień ilość
             </button>
 
+            <!-- Usuń produkt -->
             <form method="POST"
                   :action="`/spisy/{{ $spis->id }}/produkty-filtr/${selectedIdFilter}`"
                   @click.stop>
                 @csrf
                 @method('DELETE')
                 <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-gray-200 rounded-lg bg-gray-800 hover:bg-red-600 hover:text-white transition">
+                        class="w-full px-3 py-1 text-sm font-medium text-gray-100 bg-gray-700 hover:bg-red-600 hover:text-white transition duration-200">
                     Usuń produkt
                 </button>
             </form>
         </div>
 
-        <div x-show="showEdit" x-transition
-             class="absolute left-full top-0 ml-2 bg-gray-800 border border-gray-600 rounded-2xl shadow-lg p-3 w-64">
+        <!-- Panel edycji ilości -->
+        <div x-show="showEdit" x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="opacity-0 transform translate-x-1"
+            x-transition:enter-end="opacity-100 transform translate-x-0"
+            x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="opacity-100 transform translate-x-0"
+            x-transition:leave-end="opacity-0 transform translate-x-1"
+            class="absolute left-full top-0 ml-2 bg-gray-700 border border-gray-600 shadow-lg p-2 w-44 flex flex-col gap-1">
+
             <form method="POST"
-                  :action="`/spisy/{{ $spis->id }}/produkty-filtr/${selectedIdFilter}/quantity`"
-                  class="flex items-center gap-2"
-                  @click.stop>
+                :action="`/spisy/{{ $spis->id }}/produkty-filtr/${selectedIdFilter}/quantity`"
+                class="flex items-center gap-1"
+                @click.stop>
                 @csrf
                 @method('PATCH')
                 <input type="number" name="quantity" step="0.01"
-                       placeholder="Nowa ilość"
-                       class="w-24 px-3 py-1 rounded-lg bg-gray-700 border border-gray-600 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                    placeholder="Ilość"
+                    class="w-16 px-2 py-1 border border-gray-600 bg-gray-600 text-white text-sm focus:outline-none focus:ring-1 focus:ring-cyan-400" />
                 <button type="submit"
-                        class="px-3 py-1 bg-green-600 hover:bg-green-500 rounded-lg text-white text-sm transition">
+                        class="px-2 py-1 bg-green-600 hover:bg-green-500 text-white text-sm transition duration-200">
                     Zapisz
                 </button>
             </form>
+
             <button @click="showEdit = false"
-                    class="mt-2 text-xs text-red-400 hover:text-white">
+                    class="text-sm text-red-400 hover:text-red-200 transition duration-200">
                 Zamknij
             </button>
         </div>
     </div>
 </template>
+
+
+
 
 
     <!-- Przycisk dodania wyfiltrowanych -->
@@ -158,7 +172,7 @@
         <input type="hidden" name="date_to" class="date-to" value="{{ request('date_to') }}">
         <button type="submit"
                 class="px-4 py-2 bg-sky-800 hover:bg-sky-600 rounded text-white font-bold shadow-md">
-            ⊂(◉‿◉)つ Dodaj wyfiltrowane produkty do spisu
+            Dodaj wyfiltrowane produkty
         </button>
     </form>
 
@@ -169,7 +183,7 @@
          @click.window="contextOpenTemp = false">
 
         <h2 class="text-xl font-bold text-sky-700 mb-2 border-b border-cyan-500 pb-1">
-            Produkty tymczasowe (do edycji)
+            Produkty tymczasowe 
         </h2>
 
         <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-neutral-700 rounded-lg shadow-inner">
@@ -194,9 +208,9 @@
                                 selectedIdTemp = {{ $produkt->id }}
                             ">
                             <td class="p-2 font-medium">{{ $produkt->name }}</td>
-                            <td class="p-2">{{ number_format($produkt->price, 2) }}</td>
+                            <td class="p-2 font-semibold text-teal-600">{{ number_format($produkt->price, 2) }}</td>
                             <td class="p-2">{{ $produkt->unit }}</td>
-                            <td class="p-2">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
+                            <td class="p-2 font-semibold text-emerald-600">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
                             <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
                             <td class="p-2">{{ $produkt->user->name ?? '-' }}</td>
                         </tr>
@@ -217,7 +231,7 @@
 
         <!-- KONTEKSTOWE MENU dla produktów tymczasowych -->
 <template x-if="contextOpenTemp">
-    <div class="absolute bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl p-3 z-50 w-60"
+    <div class="absolute bg-gray-900 border border-gray-700 shadow-2xl p-3 z-50 w-60"
          :style="`top:${contextYTemp}px; left:${contextXTemp}px`"
          @click.stop>
         <form method="POST"
@@ -226,14 +240,15 @@
             @csrf
             <input type="number" name="price" step="0.01"
                    placeholder="Nowa cena"
-                   class="w-24 px-3 py-1 rounded-lg bg-gray-700 border border-gray-600 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                   class="w-24 px-3 py-1 bg-gray-700 border border-gray-600 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
             <button type="submit"
-                    class="px-3 py-1 bg-green-700 hover:bg-green-500 rounded-lg text-white text-sm transition">
+                    class="px-3 py-1 bg-green-700 hover:bg-green-500 text-white text-sm transition">
                 Zapisz
             </button>
         </form>
     </div>
 </template>
+
 
 
     <form method="POST" action="{{ route('spisy.produkty.finalize', $spis->id) }}">

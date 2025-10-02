@@ -22,9 +22,9 @@
                     @foreach($produktySpisu as $produkt)
                         <tr class="even:bg-black hover:bg-neutral-800/70 transition">
                             <td class="p-2 font-medium">{{ $produkt->name }}</td>
-                            <td class="p-2">{{ number_format($produkt->price, 2) }}</td>
+                            <td class="p-2 font-semibold text-teal-600">{{ number_format($produkt->price, 2) }}</td>
                             <td class="p-2">{{ $produkt->unit }}</td>
-                            <td class="p-2">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
+                            <td class="p-2 font-semibold text-emerald-600">{{ number_format($produkt->quantity, 2, '.', '') }}</td>
                             <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
                             <td class="p-2">{{ $produkt->user->name ?? '-' }}</td>
                             <td class="p-2 font-semibold text-sky-700">
@@ -51,7 +51,7 @@
             </p>
         </div>
 
-        <a href="{{ route('spisy.export.pdf', $spis->id) }}" class="inline-block px-4 py-2 mb-4 bg-sky-700 text-white rounded hover:bg-sky-800 font-bold">
+        <a href="{{ route('spisy.export.pdf', $spis->id) }}" class="inline-block px-4 py-2 mb-4 mt-4 bg-sky-800 text-white rounded hover:bg-sky-600 font-bold">
             Generuj PDF
         </a>
 
