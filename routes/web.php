@@ -85,4 +85,8 @@ Route::get('/spisy/{id}/podglad', [SpisPdfController::class, 'show'])->name('spi
 
 Route::post('/spisy/{spis}/reset', [SpisZNaturyController::class, 'reset'])->name('spisy.reset');
 
+Route::get('/products/live-search', [ProductController::class, 'search'])->name('products.live-search');
+
+Route::get('/products/search', [ProduktSkanyController::class, 'search'])->name('products.search');
+
 });
