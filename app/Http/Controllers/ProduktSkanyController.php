@@ -7,82 +7,96 @@ use App\Models\ProduktSkany;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Region;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ProduktSkanyController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->get('perPage', 25); 
+        $perPage = $request->get('perPage', 25);
+
+        Log::info('📥 Wejście na index ProduktSkany', [
+            'user_id' => auth()->id(),
+            'perPage' => $perPage
+        ]);
+
         $produktSkany = ProduktSkany::with(['product', 'user', 'region'])
             ->orderBy('scanned_at', 'desc')
             ->paginate($perPage)
-            ->withQueryString(); 
+            ->withQueryString();
 
         return view('products.index', compact('produktSkany', 'perPage'));
     }
 
-
-    // public function create()
-    // {
-    //     $products = Product::all();
-    //     $users = User::all();
-    //     $regions = Region::all();
-
-    //     return view('products.create', compact('products', 'users', 'regions'));
-    // }
-
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'product_id' => 'required|exists:products,id',
-    //         'user_id' => 'required|exists:users,id',
-    //         'region_id' => 'required|exists:regions,id',
-    //         'quantity' => 'required|integer|min:1',
-    //         'barcode' => 'nullable|string|max:13',
-    //     ]);
-
-    //     ProduktSkany::create([
-    //         'product_id' => $request->product_id,
-    //         'user_id' => $request->user_id,
-    //         'region_id' => $request->region_id,
-    //         'quantity' => $request->quantity,
-    //         'barcode' => $request->barcode,
-    //         'scanned_at' => now(),
-    //     ]);
-
-    //     return redirect()->route('produkt_skany.index')->with('success', 'Skan zapisany!');
-    // }
-
-    // Edycja ilości
-    public function edit(ProduktSkany $produktSkany)
+    public function store(Request $request)
     {
-        return view('products.edit', compact('produktSkany'));
-    }
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'user_id' => 'required|exists:users,id',
+            'region_id' => 'required|exists:regions,id',
+            'quantity'   => 'required|numeric|min:0.01',
+            'barcode' => 'nullable|string|max:13',
+        ]);
 
-    public function update(Request $request, ProduktSkany $produktSkany)
-{
-    $request->validate([
-        'quantity' => 'required|integer|min:1',
-    ]);
+        $barcode = $request->barcode ?? DB::table('barcodes')
+            ->where('product_id', $request->product_id)
+            ->value('barcode');
 
-    $produktSkany->update([
-        'quantity' => $request->quantity,
-    ]);
+        $skan = ProduktSkany::create([
+            'product_id' => $request->product_id,
+            'user_id' => $request->user_id,
+            'region_id' => $request->region_id,
+            'quantity' => $request->quantity,
+            'barcode' => $barcode,
+            'scanned_at' => now(),
+            'price_history' => 0,
+        ]);
 
-    if ($request->wantsJson()) {
         return response()->json([
             'success' => true,
-            'message' => 'Ilość zaktualizowana!',
-            'quantity' => $produktSkany->quantity
+            'newScan' => $skan->load('product'),
         ]);
     }
 
-    return redirect()->route('produkt_skany.index')->with('success', 'Ilość zaktualizowana!');
-}
 
+
+    public function update(Request $request, ProduktSkany $produktSkany)
+    {
+        Log::info('✏️ Aktualizacja ilości', [
+            'id' => $produktSkany->id,
+            'old_quantity' => $produktSkany->quantity,
+            'new_request' => $request->all()
+        ]);
+
+        $request->validate([
+            'quantity' => 'required|numeric|min:0.01',
+        ]);
+
+        $produktSkany->update([
+            'quantity' => $request->quantity,
+        ]);
+
+        Log::info('✅ Zaktualizowano ilość', [
+            'id' => $produktSkany->id,
+            'new_quantity' => $produktSkany->quantity
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Ilość zaktualizowana!',
+                'quantity' => $produktSkany->quantity
+            ]);
+        }
+
+        return redirect()->route('produkt_skany.index')->with('success', 'Ilość zaktualizowana!');
+    }
 
     public function destroy(Request $request, ProduktSkany $produktSkany)
     {
+        Log::warning('🗑️ Usuwanie skanu', ['id' => $produktSkany->id]);
+
         $produktSkany->delete();
 
         if ($request->wantsJson()) {
@@ -95,4 +109,24 @@ class ProduktSkanyController extends Controller
         return redirect()->route('produkt_skany.index')->with('success', 'Skan usunięty!');
     }
 
+    public function search(Request $request)
+    {
+        $query = $request->get('q', '');
+        Log::info('🔎 Wyszukiwanie produktów', ['query' => $query]);
+
+        $products = Product::with('unit')
+            ->when($query, function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhereHas('barcodes', fn($sub) => $sub->where('barcode', 'like', "%{$query}%"));
+            })
+            ->limit(15)
+            ->get(['id', 'name', 'unit_id']); // pobieramy też unit_id
+
+        // dołącz jednostkę do każdego produktu
+        $products->load('unit:id,code,name');
+
+        Log::info('✅ Wyniki wyszukiwania', ['count' => $products->count()]);
+
+        return response()->json($products);
+    }
 }
