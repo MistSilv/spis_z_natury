@@ -37,6 +37,9 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/produkt-skany', [ProduktSkanyController::class, 'index'])->name('produkt_skany.index');
 Route::get('/produkt-skany/create', [ProduktSkanyController::class, 'create'])->name('produkt_skany.create');
+Route::get('/products/live-search', [ProductController::class, 'search'])->name('products.live-search');
+
+Route::get('/products/search', [ProduktSkanyController::class, 'search'])->name('products.search');
 Route::post('/produkt-skany', [ProduktSkanyController::class, 'store'])->name('produkt_skany.store');
 Route::get('/produkt-skany/{produktSkany}', [ProduktSkanyController::class, 'show'])->name('produkt_skany.show');
 
