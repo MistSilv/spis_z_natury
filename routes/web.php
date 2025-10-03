@@ -89,4 +89,6 @@ Route::get('/products/live-search', [ProductController::class, 'search'])->name(
 
 Route::get('/products/search', [ProduktSkanyController::class, 'search'])->name('products.search');
 
+Route::post('/spisy/{spis}/produkty-filtr/add-by-ean', [SpisProduktyTmpController::class, 'storeByEan'])->name('produkty-filtr.storeByEan');
+
 });
