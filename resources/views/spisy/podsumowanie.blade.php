@@ -51,7 +51,7 @@
             </p>
         </div>
 
-        <a href="{{ route('spisy.export.pdf', $spis->id) }}" class="inline-block px-4 py-2 mb-4 mt-4 bg-sky-800 text-white rounded hover:bg-sky-600 font-bold">
+        <a href="{{ route('spisy.podglad', $spis->id) }}" class="inline-block px-4 py-2 mb-4 mt-4 bg-sky-800 text-white rounded hover:bg-sky-600 font-bold">
             Generuj PDF
         </a>
 

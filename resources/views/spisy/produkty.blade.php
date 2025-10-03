@@ -108,15 +108,13 @@
          @click.stop
          x-data="{ showEdit:false }">
 
-        <!-- Menu główne z tłem -->
+        <!-- Menu główne -->
         <div class="flex flex-col gap-1 bg-gray-800 border border-gray-600 p-2 w-44 shadow-lg">
-            <!-- Przycisk Zmień ilość -->
             <button @click="showEdit = true"
                     class="w-full px-3 py-1 text-sm font-medium text-gray-100 bg-gray-700 hover:bg-cyan-600 hover:text-white transition duration-200">
                 Zmień ilość
             </button>
 
-            <!-- Usuń produkt -->
             <form method="POST"
                   :action="`/spisy/{{ $spis->id }}/produkty-filtr/${selectedIdFilter}`"
                   @click.stop>

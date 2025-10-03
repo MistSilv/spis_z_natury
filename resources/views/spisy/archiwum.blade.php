@@ -40,11 +40,11 @@
             @foreach($spisy as $index => $spis)
                 <div class="
                     rounded-xl shadow-lg p-4 hover:shadow-xl transition
-                    @if($index % 2 === 0) bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800
-                    @else bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900
+                    @if($index % 2 === 0) bg-gradient-to-bl from-black via-emerald-950/40 to-black
+                    @else bg-gradient-to-br from-black via-rose-950/40 to-black
                     @endif
                     text-gray-200">
-                    <h2 class="text-lg font-bold text-sky-700 mb-2">{{ $spis->name ?? '-' }}</h2>
+                    <h2 class="text-[20px] font-bold text-sky-700 mb-2">{{ $spis->name ?? '-' }}</h2>
                     <p><strong>Region:</strong> {{ $spis->region->name ?? '-' }}</p>
                     <p><strong>Dodany przez:</strong> {{ $spis->user->name ?? '-' }}</p>
                     <p><strong>Data:</strong> {{ $spis->created_at ? $spis->created_at->format('d.m.Y H:i') : '-' }}</p>

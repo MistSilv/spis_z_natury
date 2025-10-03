@@ -8,7 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-black flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-2xl bg-gradient-to-br from-black via-slate-950 to-slate-900 rounded-lg shadow-lg p-8 border border-cyan-700/50 text-center">
+    <div class="w-full max-w-2xl bg-gradient-to-r from-black via-sky-950/40 to-black rounded-lg shadow-lg p-8 border border-cyan-700/50 text-center">
         
         <h1 class="text-2xl font-bold mb-6 text-sky-900 drop-shadow">
             Witaj, {{ Auth::user()->name }}
