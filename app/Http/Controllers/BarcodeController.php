@@ -17,7 +17,6 @@ class BarcodeController extends Controller
 {
     public function check(Request $request)
     {
-        \Log::info("🎯 CHECK METHOD CALLED");
         $request->validate([
             'barcode' => 'required|string|max:255',
         ]);
@@ -170,14 +169,10 @@ class BarcodeController extends Controller
         
         $scanTimestamp = now();
 
-        Log::info("🎯 SAVE METHOD CALLED");
-        Log::info("Product ID: {$product->id}");
-        Log::info("Scan timestamp: {$scanTimestamp}");
-        Log::info("Request quantity: {$data['quantity']}");
+
 
         $priceAtScan = $product->priceAt($scanTimestamp);
 
-        Log::info("🎯 FINAL PRICE FOR SCAN: {$priceAtScan}");
 
         $scan = ProduktSkany::create([
             'product_id'    => $data['product_id'],
@@ -189,7 +184,6 @@ class BarcodeController extends Controller
             'scanned_at'    => $scanTimestamp,
         ]);
 
-        \Log::info("🎯 SCAN SAVED WITH ID: {$scan->id}");
 
         return response()->json(['scan' => $scan]);
     }

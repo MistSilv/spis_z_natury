@@ -18,9 +18,6 @@ class Product extends Model
     {
         $scanDateTime = \Carbon\Carbon::parse($datetime);
         
-        Log::info("=== PRICE LOOKUP START ===");
-        Log::info("Product ID: {$this->id}");
-        Log::info("Scan datetime: {$scanDateTime}");
         
         // Pobierz wszystkie dostępne ceny przed datą skanu
         $availablePrices = $this->prices()
@@ -29,17 +26,14 @@ class Product extends Model
             ->orderBy('changed_at', 'desc')
             ->get();
         
-        Log::info("Available prices found: " . $availablePrices->count());
         
         foreach ($availablePrices as $price) {
-            Log::info("Price: {$price->price}, changed_at: {$price->changed_at}");
         }
         
         $priceRecord = $availablePrices->first();
         $finalPrice = $priceRecord?->price ?? 0;
         
-        Log::info("Selected price: {$finalPrice}");
-        Log::info("=== PRICE LOOKUP END ===");
+
         
         return $finalPrice;
     }

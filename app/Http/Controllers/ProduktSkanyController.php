@@ -16,10 +16,7 @@ class ProduktSkanyController extends Controller
     {
         $perPage = $request->get('perPage', 25);
 
-        Log::info('📥 Wejście na index ProduktSkany', [
-            'user_id' => auth()->id(),
-            'perPage' => $perPage
-        ]);
+
 
         $produktSkany = ProduktSkany::with(['product', 'user', 'region'])
             ->orderBy('scanned_at', 'desc')
@@ -63,11 +60,6 @@ class ProduktSkanyController extends Controller
 
     public function update(Request $request, ProduktSkany $produktSkany)
     {
-        Log::info('✏️ Aktualizacja ilości', [
-            'id' => $produktSkany->id,
-            'old_quantity' => $produktSkany->quantity,
-            'new_request' => $request->all()
-        ]);
 
         $request->validate([
             'quantity' => 'required|numeric|min:0.01',
@@ -77,10 +69,6 @@ class ProduktSkanyController extends Controller
             'quantity' => $request->quantity,
         ]);
 
-        Log::info('✅ Zaktualizowano ilość', [
-            'id' => $produktSkany->id,
-            'new_quantity' => $produktSkany->quantity
-        ]);
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -95,7 +83,6 @@ class ProduktSkanyController extends Controller
 
     public function destroy(Request $request, ProduktSkany $produktSkany)
     {
-        Log::warning('🗑️ Usuwanie skanu', ['id' => $produktSkany->id]);
 
         $produktSkany->delete();
 
@@ -112,7 +99,6 @@ class ProduktSkanyController extends Controller
     public function search(Request $request)
     {
         $query = $request->get('q', '');
-        Log::info('🔎 Wyszukiwanie produktów', ['query' => $query]);
 
         $products = Product::with('unit')
             ->when($query, function ($q) use ($query) {
@@ -125,7 +111,6 @@ class ProduktSkanyController extends Controller
         // dołącz jednostkę do każdego produktu
         $products->load('unit:id,code,name');
 
-        Log::info('✅ Wyniki wyszukiwania', ['count' => $products->count()]);
 
         return response()->json($products);
     }

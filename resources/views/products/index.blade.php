@@ -15,7 +15,7 @@
         <input type="text" x-model="query" @input.debounce.300="searchProducts" placeholder="Szukaj produktu po nazwie lub EAN..." class="w-full px-3 py-2 rounded bg-neutral-800 text-gray-200 border border-neutral-700" />
 
         <!-- Lista wyników -->
-        <ul class="bg-neutral-900 border border-neutral-700 rounded mt-2 max-h-60 overflow-y-auto" x-show="results.length > 0">
+        <ul class="bg-neutral-900 border border-neutral-700 rounded mt-2 max-h-60 overflow-y-auto" x-show="results.length > 0" x-cloak>
             <template x-for="product in results" :key="product.id">
                 <li class="px-4 py-2 flex justify-between items-center hover:bg-neutral-700">
                     <div>
@@ -28,19 +28,19 @@
         </ul>
 
         <!-- Ilość i dodaj -->
-        <div x-show="selectedProduct" class="mt-2 flex items-center gap-2">
+        <div x-show="selectedProduct" class="mt-2 flex items-center gap-2" x-cloak>
             <div>
                 <label class="text-gray-200">Produkt:</label>
-                <span class="ml-1 font-bold" x-text="selectedProduct.name"></span>
+                <span class="ml-1 font-bold" x-text="selectedProduct?.name"></span>
             </div>
 
             <div>
                 <label class="text-gray-200">Ilość:</label>
                 <input type="number" 
                     x-model.number="quantity" 
-                    :step="selectedProduct.is_integer ? 1 : 0.01" 
-                    :min="selectedProduct.is_integer ? 1 : 0.01"
-                    @input="quantity = selectedProduct.is_integer ? Math.floor(quantity) : quantity"
+                    :step="selectedProduct?.is_integer ? 1 : 0.01" 
+                    :min="selectedProduct?.is_integer ? 1 : 0.01"
+                    @input="quantity = selectedProduct?.is_integer ? Math.floor(quantity) : quantity"
                     class="w-32 px-2 py-1 rounded bg-neutral-800 text-gray-200 border border-neutral-700" 
                 />
             </div>
@@ -123,6 +123,7 @@ function productScan() {
                 return;
             }
 
+
             fetch(`/products/search?q=${encodeURIComponent(this.query)}`)
                 .then(res => res.json())
                 .then(data => {
@@ -130,7 +131,8 @@ function productScan() {
                         ...p,
                         is_integer: ['szt','opak','tab','kart'].includes(p.unit?.code || '')
                     }));
-                });
+                })
+                .catch(err => console.error("❌ Błąd fetch /products/search:", err));
         },
 
         selectProduct(product) {
@@ -205,7 +207,7 @@ function productScan() {
                     tbody.prepend(row); // dodaje wiersz na górę
                 }
             })
-            .catch(err => console.error("❌ Błąd API:", err));
+            .catch(err => console.error("❌ Błąd API przy dodawaniu produktu:", err));
         }
     }
 }
