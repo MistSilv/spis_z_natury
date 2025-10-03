@@ -497,7 +497,7 @@ public function clearTemp(SpisZNatury $spis)
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $spisy = $query->paginate(20)->appends($request->all());
+        $spisy = $query->paginate(15)->appends($request->all());
         $regions = Region::all();
 
         return view('spisy.archiwum', compact('spisy', 'regions'));
