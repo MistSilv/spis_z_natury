@@ -212,4 +212,19 @@ function productScan() {
     }
 }
 </script>
+
+<!-- Tailwind Modals (place somewhere in your HTML, e.g., bottom of body) -->
+<div id="modal-overlay" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+    <div id="modal" class="bg-gray-800 text-white rounded-lg shadow-lg max-w-lg w-full p-6">
+        <h2 id="modal-title" class="text-xl font-bold mb-4"></h2>
+        <p id="modal-message" class="mb-4"></p>
+        <input id="modal-input" type="number" min="0.01" class="w-full p-2 mb-4 rounded bg-gray-700 border border-gray-600 hidden" />
+        <div class="flex justify-end gap-2">
+            <button id="modal-cancel" class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded">Anuluj</button>
+            <button id="modal-confirm" class="bg-sky-600 hover:bg-sky-500 px-4 py-2 rounded">OK</button>
+        </div>
+    </div>
+</div>
+
+
 </x-layout>

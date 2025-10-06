@@ -16,15 +16,23 @@ class ProduktSkanyController extends Controller
     {
         $perPage = $request->get('perPage', 25);
 
+        $user = auth()->user();
 
+        $produktSkanyQuery = ProduktSkany::with(['product', 'user', 'region'])
+            ->orderBy('scanned_at', 'desc');
 
-        $produktSkany = ProduktSkany::with(['product', 'user', 'region'])
-            ->orderBy('scanned_at', 'desc')
-            ->paginate($perPage)
+        // Filtracja dla zwykłego pracownika
+        if ($user->role === 'pracownik') {
+            $produktSkanyQuery->where('user_id', $user->id);
+        }
+        // Admin, kierownik i ksiegowy widzą wszystkie skany, więc nie filtrujemy
+
+        $produktSkany = $produktSkanyQuery->paginate($perPage)
             ->withQueryString();
 
         return view('products.index', compact('produktSkany', 'perPage'));
     }
+
 
     public function store(Request $request)
     {
