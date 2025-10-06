@@ -26,13 +26,45 @@ class SpisZNaturyController extends Controller
         return view('spisy.index', compact('spisy'));
     }
 
-    public function create(Request $request)
+   public function create(Request $request)
     {
         $regions = Region::all();
         $selectedRegion = $request->region_id ?? null;
 
-        return view('spisy.create', compact('regions', 'selectedRegion'));
+        $currentYear = now()->year;
+        $suffix = 'SUR';
+        $defaultName = null;
+
+        if ($selectedRegion) {
+            $count = SpisZNatury::where('region_id', $selectedRegion)
+                ->whereYear('created_at', $currentYear)
+                ->count();
+
+            $nextNumber = $count + 1;
+
+            $defaultName = str_pad($nextNumber, 2, '0', STR_PAD_LEFT) . '/' . $currentYear . '/' . $suffix;
+        }
+
+        $spisyCount = SpisZNatury::whereYear('created_at', $currentYear)
+            ->select('region_id', DB::raw('count(*) as total'))
+            ->groupBy('region_id')
+            ->pluck('total', 'region_id');
+
+        return view('spisy.create', compact(
+            'regions',
+            'selectedRegion',
+            'defaultName',
+            'spisyCount',
+            'suffix',
+            'currentYear'
+        ));
     }
+
+
+
+
+
+
 
     public function store(Request $request)
     {
@@ -143,12 +175,10 @@ class SpisZNaturyController extends Controller
         $regionId = $spis->region_id;
 
         DB::transaction(function () use ($spis, $userId, $regionId) {
-            // Pobierz wszystkie TMP produkty z tego spisu
             $produktyTmp = SpisProduktyTmp::where('spis_id', $spis->id)->get();
 
             foreach ($produktyTmp as $tmp) {
                 if ($tmp->produkt_skany_id) {
-                    // Cofnij zużycie w produkt_skany
                     ProduktSkany::where('id', $tmp->produkt_skany_id)
                         ->update([
                             'used_quantity' => DB::raw("GREATEST(0, used_quantity - {$tmp->quantity})")
@@ -156,10 +186,8 @@ class SpisZNaturyController extends Controller
                 }
             }
 
-            // Usuń wpisy tymczasowe dla spisu
             SpisProduktyTmp::where('spis_id', $spis->id)->delete();
 
-            // Dodatkowo usuń dane filtra tymczasowego dla użytkownika i regionu
             DB::table('produkty_filtr_tmp')
                 ->where('user_id', $userId)
                 ->where('region_id', $regionId)
@@ -167,8 +195,9 @@ class SpisZNaturyController extends Controller
         });
 
         return redirect()->route('spisy.produkty', $spis->id)
-            ->with('success', 'Spis został wyczyszczony, ilości przywrócone, a dane filtra tymczasowego usunięte.');
+            ->with('success', 'Spis został wyczyszczony, a dane tymczasowe usunięte.');
     }
+
 
 // jeden z nielicznych kolosów Sylwestra Wardenki na Bakstona
 // ogólnie to pobiera sobie rekordy z tabeli filtra tymczasowego
@@ -546,7 +575,11 @@ public function clearTemp(SpisZNatury $spis)
     return redirect()->route('spisy.podsumowanie', $spis->id)
         ->with('success', 'Twoje produkty zostały przeniesione do spisu głównego, a dane tymczasowe usunięte.');
 }
+
+
 }
+
+
 
 
 

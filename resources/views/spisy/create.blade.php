@@ -39,47 +39,91 @@
             @csrf
 
             <label class="block mb-2 text-gray-300">Nazwa spisu:</label>
-            <input type="text" name="name" id="spis-name" class="w-full mb-4 p-2 rounded bg-slate-800 text-white" required>
+            <input 
+                type="text" 
+                name="name" 
+                id="spis-name" 
+                class="w-full mb-4 p-2 rounded bg-slate-800 text-white" 
+                value="{{ $defaultName ?? '' }}" 
+                required
+            >
 
             <label class="block mb-2 text-gray-300">Opis:</label>
-            <textarea name="description" class="w-full mb-4 p-2 rounded bg-slate-800 text-white"></textarea>
+            <textarea 
+                name="description" 
+                class="w-full mb-4 p-2 rounded bg-slate-800 text-white"
+            ></textarea>
 
             <label class="block mb-2 text-gray-300">Region:</label>
-            <select name="region_id" class="w-full mb-4 p-2 rounded bg-slate-800 text-white" required>
+            <select 
+                name="region_id" 
+                id="region-select" 
+                class="w-full mb-4 p-2 rounded bg-slate-800 text-white" 
+                required
+            >
+                <option value="">-- wybierz region --</option>
                 @foreach($regions as $region)
-                    <option value="{{ $region->id }}" {{ ($selectedRegion == $region->id) ? 'selected' : '' }}>
+                    <option 
+                        value="{{ $region->id }}" 
+                        {{ ($selectedRegion == $region->id) ? 'selected' : '' }}
+                    >
                         {{ $region->name }}
                     </option>
                 @endforeach
             </select>
 
-            <button type="submit" class="bg-sky-800 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded">
+            <button 
+                type="submit" 
+                class="bg-sky-800 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded"
+            >
                 Utwórz spis
             </button>
         </form>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const restoreLink = document.getElementById("restore-link");
-            const resetBtn = document.getElementById("reset-btn");
-            const spisName = document.getElementById("spis-name");
+   <script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const restoreLink = document.getElementById("restore-link");
+    const resetBtn = document.getElementById("reset-btn");
+    const spisName = document.getElementById("spis-name");
+    const regionSelect = document.getElementById("region-select");
 
-            function checkName(e) {
-                if (!spisName.value.trim()) {
-                    e.preventDefault();
-                    alert("Podaj nazwę spisu, zanim wykonasz tę akcję!");
-                    spisName.focus();
-                }
-            }
+    function checkName(e) {
+        if (!spisName.value.trim()) {
+            e.preventDefault();
+            alert("Podaj nazwę spisu, zanim wykonasz tę akcję!");
+            spisName.focus();
+        }
+    }
 
-            if (restoreLink) {
-                restoreLink.addEventListener("click", checkName);
-            }
+    if (restoreLink) restoreLink.addEventListener("click", checkName);
+    if (resetBtn) resetBtn.addEventListener("click", checkName);
 
-            if (resetBtn) {
-                resetBtn.addEventListener("click", checkName);
-            }
-        });
-    </script>
+    const spisyCount = @json($spisyCount);
+    const currentYear = "{{ $currentYear }}";
+    const suffix = "{{ $suffix }}";
+
+    function updateName() {
+        const regionId = regionSelect.value;
+        if (!regionId) {
+            spisName.value = '';
+            return;
+        }
+
+        const count = spisyCount[regionId] ?? 0;
+        const nextNumber = count + 1;
+        // 👇 Zmienione — bez zer wiodących
+        spisName.value = nextNumber + '/' + currentYear + '/' + suffix;
+    }
+
+    regionSelect.addEventListener('change', updateName);
+
+    if (regionSelect.value) {
+        updateName();
+    }
+});
+</script>
+
+
 </x-layout>

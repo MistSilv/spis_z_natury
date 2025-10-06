@@ -91,4 +91,7 @@ Route::get('/products/search', [ProduktSkanyController::class, 'search'])->name(
 
 Route::post('/spisy/{spis}/produkty-filtr/add-by-ean', [SpisProduktyTmpController::class, 'storeByEan'])->name('produkty-filtr.storeByEan');
 
+Route::get('/spisy/default-name/{region}', [SpisZNaturyController::class, 'getDefaultName'])->name('spisy.defaultName');
+
+
 });
