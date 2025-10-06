@@ -5,6 +5,33 @@ document.addEventListener('DOMContentLoaded', function () {
     const startBtn = document.getElementById('start-scan');
     const stopBtn = document.getElementById('stop-scan');
 
+    // Modal elements
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalInput = document.getElementById('modal-input');
+    const modalConfirm = document.getElementById('modal-confirm');
+    const modalCancel = document.getElementById('modal-cancel');
+
+    function showModal(title, message, { input = false } = {}) {
+        modalTitle.innerText = title;
+        modalMessage.innerText = message;
+        modalInput.value = input ? "1" : "";
+        modalInput.classList.toggle('hidden', !input);
+        modalOverlay.classList.remove('hidden');
+
+        return new Promise((resolve, reject) => {
+            modalConfirm.onclick = () => {
+                modalOverlay.classList.add('hidden');
+                resolve(input ? modalInput.value : true);
+            };
+            modalCancel.onclick = () => {
+                modalOverlay.classList.add('hidden');
+                resolve(null);
+            };
+        });
+    }
+
     async function onScanSuccess(decodedText) {
         if (window.isProcessingScan) return;
         window.isProcessingScan = true;
@@ -13,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         try {
-            // Sprawdzenie kodu kreskowego
             const res = await fetch('/Barcode_check', {
                 method: 'POST',
                 headers: {
@@ -26,15 +52,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const data = await res.json();
             if (!res.ok || !data.product) {
-                alert(data.message || "Produkt nie znaleziony");
+                await showModal('Błąd', data.message || "Produkt nie znaleziony");
                 window.isProcessingScan = false;
                 return;
             }
 
             const product = data.product;
-            const qty = prompt(`Podaj ilość dla produktu: ${product.name}`, "1");
+            const qty = await showModal(`Podaj ilość dla produktu: ${product.name}`, '', { input: true });
 
-            if (qty && !isNaN(qty) && parseFloat(qty) > 0) {
+            if (qty !== null && !isNaN(qty) && parseFloat(qty) > 0) {
                 const saveRes = await fetch('/scan/save', {
                     method: 'POST',
                     credentials: 'same-origin',
@@ -55,9 +81,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const saveData = await saveRes.json();
 
                 if (!saveRes.ok) {
-                    alert(saveData.message || "Błąd zapisu skanu.");
+                    await showModal('Błąd', saveData.message || "Błąd zapisu skanu.");
                 } else {
-                    // Dynamiczne dodanie wiersza do tabeli
                     const tbody = document.getElementById('scans-table-body');
                     const skan = saveData.scan;
 
@@ -78,20 +103,20 @@ document.addEventListener('DOMContentLoaded', function () {
                         <td class="p-4">${formattedDate}</td>
                         <td class="p-4 flex gap-2">
                             <button onclick="editQuantity(${skan.id}, '${product.name}', ${skan.quantity})" class="bg-sky-800 hover:bg-sky-600 text-slate-100 px-3 py-1 rounded shadow transition">Edytuj</button>
-                            <form method="POST" action="/produkt-skany/${skan.id}" onsubmit="return confirm('Na pewno usunąć?');">
+                            <form method="POST" action="/produkt-skany/${skan.id}" onsubmit="return confirmDelete();">
                                 <input type="hidden" name="_token" value="${token}">
                                 <input type="hidden" name="_method" value="DELETE">
                                 <button type="submit" class="bg-red-800 hover:bg-red-600 text-slate-100 px-3 py-1 rounded shadow transition">Usuń</button>
                             </form>
                         </td>
                     `;
-                    tbody.prepend(row); // dodaje wiersz na górę
+                    tbody.prepend(row);
                 }
             } else {
-                alert("Nieprawidłowa ilość.");
+                await showModal('Błąd', "Nieprawidłowa ilość.");
             }
         } catch (err) {
-            alert(err.message || "Błąd przy sprawdzaniu kodu.");
+            await showModal('Błąd', err.message || "Błąd przy sprawdzaniu kodu.");
         } finally {
             window.isProcessingScan = false;
         }
@@ -101,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (isScanning) return;
 
         Html5Qrcode.getCameras().then(devices => {
-            if (!devices.length) return alert("No cameras found.");
+            if (!devices.length) return showModal('Błąd', "No cameras found.");
 
             document.getElementById('reader').style.display = 'block';
             startBtn.classList.add('hidden');
@@ -112,9 +137,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 { fps: 10, qrbox: 250 },
                 onScanSuccess
             ).then(() => { isScanning = true; })
-             .catch(err => alert("Error starting scanner: " + err));
+             .catch(err => showModal('Błąd', "Error starting scanner: " + err));
 
-        }).catch(err => alert("Error getting cameras: " + err));
+        }).catch(err => showModal('Błąd', "Error getting cameras: " + err));
     });
 
     stopBtn.addEventListener('click', () => {
@@ -126,15 +151,20 @@ document.addEventListener('DOMContentLoaded', function () {
             startBtn.classList.remove('hidden');
             stopBtn.classList.add('hidden');
             document.getElementById('scan-result').innerText = "Scanning stopped.";
-        }).catch(err => alert("Error stopping scanner: " + err));
+        }).catch(err => showModal('Błąd', "Error stopping scanner: " + err));
     });
 
-    // Funkcja edycji ilości dostępna globalnie
+    // Replace confirm() with modal
+    window.confirmDelete = async function () {
+        const result = await showModal('Potwierdzenie', 'Na pewno usunąć?');
+        return !!result;
+    };
+
     window.editQuantity = async function(scanId, productName, currentQty) {
-        const newQty = prompt(`Podaj nową ilość dla produktu: ${productName}`, currentQty);
+        const newQty = await showModal(`Podaj nową ilość dla produktu: ${productName}`, '', { input: true });
         if (newQty === null) return;
         if (isNaN(newQty) || parseFloat(newQty) < 1) {
-            alert("Nieprawidłowa ilość.");
+            await showModal('Błąd', "Nieprawidłowa ilość.");
             return;
         }
 
@@ -154,19 +184,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.message || "Błąd przy aktualizacji ilości.");
+                await showModal('Błąd', data.message || "Błąd przy aktualizacji ilości.");
             } else {
-                // Aktualizacja wiersza w tabeli
                 const tbody = document.getElementById('scans-table-body');
                 const row = Array.from(tbody.children).find(tr => parseInt(tr.children[0].innerText) === scanId);
-                if (row) {
-                    row.children[2].innerText = parseFloat(newQty).toFixed(2);
-                }
+                if (row) row.children[2].innerText = parseFloat(newQty).toFixed(2);
 
-                alert(`Ilość produktu ${productName} zaktualizowana do ${newQty}`);
+                await showModal('Sukces', `Ilość produktu ${productName} zaktualizowana do ${newQty}`);
             }
         } catch (err) {
-            alert(err.message || "Błąd przy aktualizacji ilości.");
+            await showModal('Błąd', err.message || "Błąd przy aktualizacji ilości.");
         }
     };
 });

@@ -76,6 +76,11 @@ class ProduktSkanySeeder extends Seeder
 
         // Wstawiamy paczkami
         if (!empty($batch)) {
+            // Sortuj batch po dacie scanned_at rosnąco
+            usort($batch, function ($a, $b) {
+                return $a['scanned_at'] <=> $b['scanned_at'];
+            });
+
             foreach (array_chunk($batch, 150) as $chunk) {
                 DB::table('produkt_skany')->insert($chunk);
             }
