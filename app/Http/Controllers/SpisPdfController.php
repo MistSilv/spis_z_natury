@@ -10,7 +10,7 @@ class SpisPdfController extends Controller
 {
     public function show($spisId)
     {
-        $spis = SpisZNatury::findOrFail($spisId);
+        $spis = SpisZNatury::with('region')->findOrFail($spisId);
 
         $produkty = SpisProdukty::where('spis_id', $spisId)
             ->orderBy('id', 'asc')

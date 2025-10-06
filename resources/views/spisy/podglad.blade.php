@@ -98,18 +98,22 @@
   </div>
 
   <h1 class="text-center text-lg font-semibold mb-4">
-    Arkusz spisu z natury nr {{ $spis->number ?? '22/2025/SUR' }}
+    Arkusz spisu z natury nr {{ $spis->name ?? '—' }}
   </h1>
 
   <table class="mb-4">
     <tbody>
       <tr>
         <td class="w-2/5 border-none">Nazwa lub numer pola spisowego</td>
-        <td class="w-3/5 font-medium border-none">{{ $spis->field_name ?? 'Garmaż surowce' }}</td>
+        <td class="w-3/5 font-medium border-none">
+          {{ $spis->region->name ?? 'Brak regionu' }} surowce
+        </td>
       </tr>
       <tr>
         <td class="border-none">Przedmiot spisu</td>
-        <td class="font-medium border-none">{{ $spis->subject ?? 'Garmaż' }}</td>
+        <td class="font-medium border-none">
+          {{ $spis->region->name ?? '—' }}
+        </td>
       </tr>
       <tr>
         <td class="border-none">Osoba odpowiedzialna materialnie</td>
