@@ -4,6 +4,10 @@
     @if(session('success'))
         <p class="mb-6 text-green-800 font-semibold">{{ session('success') }}</p>
     @endif
+    @if(session('error'))
+        <div class="text-red-500">{{ session('error') }}</div>
+    @endif
+
 
     <!-- Formularz filtrowania i zapisu do bufora -->
     <div class="mb-6 flex gap-4 items-end flex-wrap">
@@ -106,13 +110,17 @@
     <div class="absolute z-50"
          :style="`top:${contextYFilter}px; left:${contextXFilter}px`"
          @click.stop
-         x-data="{ showEdit:false }">
-
+         x-data="{ showEdit:false, showAddByEan:false }">
         <!-- Menu główne -->
         <div class="flex flex-col gap-1 bg-gray-800 border border-gray-600 p-2 w-44 shadow-lg">
             <button @click="showEdit = true"
                     class="w-full px-3 py-1 text-sm font-medium text-gray-100 bg-gray-700 hover:bg-cyan-600 hover:text-white transition duration-200">
                 Zmień ilość
+            </button>
+
+            <button @click="showAddByEan = true"
+                    class="w-full px-3 py-1 text-sm font-medium text-gray-100 bg-gray-700 hover:bg-blue-600 hover:text-white transition duration-200">
+                Dodaj po EAN
             </button>
 
             <form method="POST"
@@ -127,24 +135,24 @@
             </form>
         </div>
 
-        <!-- Panel edycji ilości -->
-        <div x-show="showEdit" x-transition:enter="transition ease-out duration-150"
-            x-transition:enter-start="opacity-0 transform translate-x-1"
-            x-transition:enter-end="opacity-100 transform translate-x-0"
-            x-transition:leave="transition ease-in duration-100"
-            x-transition:leave-start="opacity-100 transform translate-x-0"
-            x-transition:leave-end="opacity-0 transform translate-x-1"
-            class="absolute left-full top-0 ml-2 bg-gray-700 border border-gray-600 shadow-lg p-2 w-44 flex flex-col gap-1">
+        <div x-show="showEdit"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 transform translate-x-1"
+             x-transition:enter-end="opacity-100 transform translate-x-0"
+             x-transition:leave="transition ease-in duration-100"
+             x-transition:leave-start="opacity-100 transform translate-x-0"
+             x-transition:leave-end="opacity-0 transform translate-x-1"
+             class="absolute left-full top-0 ml-2 bg-gray-700 border border-gray-600 shadow-lg p-2 w-44 flex flex-col gap-1">
 
             <form method="POST"
-                :action="`/spisy/{{ $spis->id }}/produkty-filtr/${selectedIdFilter}/quantity`"
-                class="flex items-center gap-1"
-                @click.stop>
+                  :action="`/spisy/{{ $spis->id }}/produkty-filtr/${selectedIdFilter}/quantity`"
+                  class="flex items-center gap-1"
+                  @click.stop>
                 @csrf
                 @method('PATCH')
                 <input type="number" name="quantity" step="0.01"
-                    placeholder="Ilość"
-                    class="w-16 px-2 py-1 border border-gray-600 bg-gray-600 text-white text-sm focus:outline-none focus:ring-1 focus:ring-cyan-400" />
+                       placeholder="Ilość"
+                       class="w-16 px-2 py-1 border border-gray-600 bg-gray-600 text-white text-sm focus:outline-none focus:ring-1 focus:ring-cyan-400" />
                 <button type="submit"
                         class="px-2 py-1 bg-green-600 hover:bg-green-500 text-white text-sm transition duration-200">
                     Zapisz
@@ -156,8 +164,43 @@
                 Zamknij
             </button>
         </div>
+
+        <div x-show="showAddByEan"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 transform translate-x-1"
+             x-transition:enter-end="opacity-100 transform translate-x-0"
+             x-transition:leave="transition ease-in duration-100"
+             x-transition:leave-start="opacity-100 transform translate-x-0"
+             x-transition:leave-end="opacity-0 transform translate-x-1"
+             class="absolute left-full top-0 ml-2 bg-gray-700 border border-gray-600 shadow-lg p-2 w-56 flex flex-col gap-2">
+
+            <form method="POST"
+                  action="{{ route('produkty-filtr.storeByEan', $spis->id) }}"
+                  class="flex flex-col gap-2"
+                  @click.stop>
+                @csrf
+                <input type="text" name="ean" maxlength="50"
+                       placeholder="Kod EAN"
+                       class="w-full px-2 py-1 border border-gray-600 bg-gray-600 text-white text-sm focus:outline-none focus:ring-1 focus:ring-cyan-400" />
+
+                <input type="number" name="quantity" step="0.01" min="0.01"
+                       placeholder="Ilość"
+                       class="w-full px-2 py-1 border border-gray-600 bg-gray-600 text-white text-sm focus:outline-none focus:ring-1 focus:ring-cyan-400" />
+
+                <button type="submit"
+                        class="px-2 py-1 bg-green-600 hover:bg-green-500 text-white text-sm transition duration-200">
+                    Dodaj
+                </button>
+            </form>
+
+            <button @click="showAddByEan = false"
+                    class="text-sm text-red-400 hover:text-red-200 transition duration-200">
+                Zamknij
+            </button>
+        </div>
     </div>
 </template>
+
 
 
 
