@@ -128,7 +128,7 @@
                                         class="w-28 border border-neutral-700 rounded bg-neutral-900 p-1 text-gray-100" required>
                                     <option value="">-- jednostka --</option>
                                     <template x-for="u in units" :key="u.code">
-                                        <option :value="u.code" x-text="u.name"></option>
+                                        <option :value="u.code" x-text="u.name" :selected="u.code === row.unit"></option>
                                     </template>
                                 </select>
                                 <input type="text" :name="`products[${index}][barcode]`" x-model="row.barcode"
@@ -191,6 +191,7 @@
                         vat: '',
                         quantity: 1,
                         unit: product.unit ?? '',
+                        unit_name: product.unit_name ?? '',
                         barcode: product.ean ?? ''
                     });
                     this.resultsVisible = false;

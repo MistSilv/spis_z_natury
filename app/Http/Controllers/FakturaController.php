@@ -185,8 +185,10 @@ class FakturaController extends Controller
                 'name'  => $product->name,
                 'ean'   => $product->barcodes->first()?->barcode,
                 'unit'  => $product->unit?->code ?? '',
+                'unit_name' => $product->unit?->name ?? '',
                 'price' => $priceEntry?->price ?? null,
             ];
+
         });
 
         return response()->json($result);
