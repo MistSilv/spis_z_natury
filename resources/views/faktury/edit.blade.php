@@ -1,38 +1,71 @@
-<x-layout>
-    <div class="max-w-3xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50">
-        <h1 class="text-2xl font-bold mb-6 text-sky-700">Edytuj fakturę {{ $faktura->number }}</h1>
+<x-layout title="Edytuj fakturę {{ $faktura->number }}">
+    <div class="max-w-4xl mx-auto p-6 bg-zinc-900/50 rounded-xl shadow-lg border border-cyan-700/50">
 
-        <form action="{{ route('faktury.update', $faktura) }}" method="POST">
+        <h1 class="text-2xl font-bold text-sky-700 mb-6">
+            Edytuj fakturę: {{ $faktura->number }}
+        </h1>
+
+        <form action="{{ route('faktury.update', $faktura) }}" method="POST" class="space-y-5">
             @csrf
             @method('PUT')
 
-            <div class="mb-4">
-                <label for="number" class="block font-medium mb-1 text-gray-200">Numer faktury</label>
-                <input id="number" type="text" name="number" value="{{ old('number', $faktura->number) }}"
-                       class="w-full border border-slate-700 bg-slate-800 text-gray-100 p-2 rounded" required>
-
-            <div class="mb-4">
-                <label for="data_wystawienia" class="block font-medium mb-1 text-gray-200">Data wystawienia</label>
-                <input id="data_wystawienia" type="date" name="data_wystawienia"
-                       value="{{ old('data_wystawienia', $faktura->data_wystawienia?->format('Y-m-d')) }}"
-                       class="w-full border border-slate-700 bg-slate-800 text-gray-100 p-2 rounded" required>
+            <!-- Numer faktury -->
+            <div>
+                <label for="number" class="block text-sm font-semibold text-sky-600 mb-1">Numer faktury</label>
+                <input 
+                    id="number" 
+                    type="text" 
+                    name="number" 
+                    value="{{ old('number', $faktura->number) }}"
+                    required
+                    class="w-full rounded-lg border border-neutral-700 bg-neutral-900 text-gray-100 p-2 focus:ring-2 focus:ring-sky-700 focus:outline-none"
+                >
             </div>
 
-            <div class="mb-4">
-                <label for="data_sprzedazy" class="block font-medium mb-1 text-gray-200">Data sprzedaży</label>
-                <input id="data_sprzedazy" type="date" name="data_sprzedazy"
-                       value="{{ old('data_sprzedazy', $faktura->data_sprzedazy?->format('Y-m-d')) }}"
-                       class="w-full border border-slate-700 bg-slate-800 text-gray-100 p-2 rounded">
+            <!-- Data wystawienia -->
+            <div>
+                <label for="data_wystawienia" class="block text-sm font-semibold text-sky-600 mb-1">Data wystawienia</label>
+                <input 
+                    id="data_wystawienia" 
+                    type="date" 
+                    name="data_wystawienia"
+                    value="{{ old('data_wystawienia', $faktura->data_wystawienia?->format('Y-m-d')) }}"
+                    required
+                    class="w-full rounded-lg border border-neutral-700 bg-neutral-900 text-gray-100 p-2 focus:ring-2 focus:ring-sky-700 focus:outline-none"
+                >
             </div>
 
-            <div class="mb-4">
-                <label for="notes" class="block font-medium mb-1 text-gray-200">Notatki</label>
-                <textarea id="notes" name="notes"
-                        class="w-full border border-slate-700 bg-slate-800 text-gray-100 p-2 rounded" rows="3">{{ old('notes', $faktura->notes) }}</textarea>
+            <!-- Data sprzedaży -->
+            <div>
+                <label for="data_sprzedazy" class="block text-sm font-semibold text-sky-600 mb-1">Data sprzedaży</label>
+                <input 
+                    id="data_sprzedazy" 
+                    type="date" 
+                    name="data_sprzedazy"
+                    value="{{ old('data_sprzedazy', $faktura->data_sprzedazy?->format('Y-m-d')) }}"
+                    class="w-full rounded-lg border border-neutral-700 bg-neutral-900 text-gray-100 p-2 focus:ring-2 focus:ring-sky-700 focus:outline-none"
+                >
             </div>
 
-            <div class="flex justify-end">
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <!-- Notatki -->
+            <div>
+                <label for="notes" class="block text-sm font-semibold text-sky-600 mb-1">Notatki</label>
+                <textarea 
+                    id="notes" 
+                    name="notes" 
+                    rows="3"
+                    class="w-full rounded-lg border border-neutral-700 bg-neutral-900 text-gray-100 p-2 focus:ring-2 focus:ring-sky-700 focus:outline-none"
+                >{{ old('notes', $faktura->notes) }}</textarea>
+            </div>
+
+            <!-- Przyciski -->
+            <div class="flex justify-end gap-3 pt-4">
+                <a href="{{ route('faktury.show', $faktura) }}" 
+                   class="px-4 py-2 bg-neutral-800 text-gray-300 rounded-lg hover:bg-neutral-700 transition">
+                   Anuluj
+                </a>
+                <button type="submit"
+                        class="px-4 py-2 bg-sky-800 text-white rounded-lg hover:bg-sky-600 font-bold transition">
                     Zapisz zmiany
                 </button>
             </div>
