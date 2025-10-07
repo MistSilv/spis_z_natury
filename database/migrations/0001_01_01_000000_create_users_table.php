@@ -131,16 +131,6 @@ return new class extends Migration
             $table->foreignId('unit_id')->constrained('units')->cascadeOnDelete();
         });
 
-        Schema::create('product_prices_history', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->decimal('price', 15, 2);
-            $table->timestamp('changed_at')->useCurrent();
-        });
-
-            
-
-
         // EAN codes table
         Schema::create('barcodes', function (Blueprint $table) {
             $table->id();
@@ -149,6 +139,51 @@ return new class extends Migration
             $table->timestamps();
         });
         
+
+        Schema::create('product_prices_history', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->decimal('price', 15, 2);
+            $table->timestamp('changed_at')->useCurrent();
+        });
+
+
+        Schema::create('faktury', function (Blueprint $table) {
+            $table->id();
+            $table->string('number')->unique();
+            $table->date('data_wystawienia');
+            $table->date('data_sprzedazy')->nullable();
+            $table->text('notes')->nullable();
+            $table->timestamps();
+
+        });
+
+        Schema::create('faktury_produkty', function (Blueprint $table) {
+            $table->id();
+
+            // powiązanie z fakturą
+            $table->foreignId('faktura_id')->constrained('faktury')->cascadeOnDelete();
+
+            // opcjonalne powiązanie z istniejącym produktem
+            $table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
+
+            // dane fakturowe (zawsze muszą zostać)
+            $table->string('name'); // nazwa produktu w momencie faktury
+            $table->decimal('price', 15, 2); // cena (musi zostać, bo faktura ma własne ceny)
+            $table->decimal('quantity', 15, 2)->default(1);
+            $table->string('unit'); // jednostka, np. "kg", "szt"
+            $table->string('barcode', 13)->nullable();
+
+            $table->timestamps();
+
+            $table->index(['faktura_id']);
+            $table->index(['product_id']);
+        });
+
+            
+
+
+
         Schema::create('produkt_skany', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();

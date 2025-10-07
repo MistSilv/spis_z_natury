@@ -9,6 +9,7 @@ use App\Http\Controllers\SpisZNaturyController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SpisPdfController;
 use App\Http\Controllers\SpisProduktyTmpController;
+use App\Http\Controllers\FakturaController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -92,6 +93,23 @@ Route::get('/products/search', [ProduktSkanyController::class, 'search'])->name(
 Route::post('/spisy/{spis}/produkty-filtr/add-by-ean', [SpisProduktyTmpController::class, 'storeByEan'])->name('produkty-filtr.storeByEan');
 
 Route::get('/spisy/default-name/{region}', [SpisZNaturyController::class, 'getDefaultName'])->name('spisy.defaultName');
+
+
+Route::prefix('faktury')->name('faktury.')->group(function () {
+    Route::get('/', [FakturaController::class, 'index'])->name('index');
+    Route::get('/create', [FakturaController::class, 'create'])->name('create');
+    Route::post('/', [FakturaController::class, 'store'])->name('store');
+    Route::get('/{faktura}', [FakturaController::class, 'show'])->name('show');
+    Route::get('/{faktura}/edit', [FakturaController::class, 'edit'])->name('edit');
+    Route::put('/{faktura}', [FakturaController::class, 'update'])->name('update');
+
+    // Dodawanie produktów do faktury
+    Route::get('/{faktura}/products/create', [FakturaController::class, 'productsCreate'])->name('products.create');
+    Route::post('/{faktura}/products', [FakturaController::class, 'productsStore'])->name('products.store');
+
+    // Nowe wyszukiwanie produktów do faktury
+    Route::get('/products/live-search', [FakturaController::class, 'productsLiveSearch'])->name('products.live-search');
+});
 
 
 });

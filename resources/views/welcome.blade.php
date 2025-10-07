@@ -14,7 +14,7 @@
             Witaj, {{ Auth::user()->name }}
         </h1>
 
-        <div class="flex justify-center gap-6">
+        <div class="flex flex-wrap justify-center gap-6">
             <button onclick="window.location='{{ route('produkt_skany.index') }}'"
                 class="bg-sky-800 hover:bg-sky-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-cyan-800/50 transition">
                 Produkty 
@@ -28,6 +28,12 @@
             <button onclick="window.location='{{ route('products.index') }}'"
                 class="bg-sky-800 hover:bg-sky-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-cyan-800/50 transition">
                 Dodaj Produkt 
+            </button>
+
+            <!-- NOWY PRZYCISK DO FAKTUR -->
+            <button onclick="window.location='{{ route('faktury.index') }}'"
+                class="bg-sky-800 hover:bg-sky-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-cyan-800/50 transition">
+                Faktury
             </button>
             
             <form method="POST" action="{{ route('logout') }}">
