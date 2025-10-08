@@ -84,7 +84,7 @@
 
   <div class="no-print flex justify-end mb-4">
     <button 
-      onclick="alert('💡 Przy zapisie wybierz nazwę: {{ $spis->name }}.pdf'); window.print();" 
+      onclick="alert('Przy zapisie użyj nazwy: {{ $spis->name }} dla pliku'); window.print();" 
       class="bg-sky-800 text-white px-4 py-2 rounded hover:bg-sky-600 transition">
       Drukuj / Zapisz PDF
     </button>
