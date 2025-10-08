@@ -38,12 +38,12 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($spisy as $index => $spis)
-                <div class="
-                    rounded-xl shadow-lg p-4 hover:shadow-xl transition
-                    @if($index % 2 === 0) bg-gradient-to-bl from-black via-emerald-950/40 to-black
-                    @else bg-gradient-to-br from-black via-rose-950/40 to-black
-                    @endif
-                    text-gray-200">
+                <div class="rounded-xl shadow-lg p-4 hover:shadow-xl transition text-gray-200
+                    @if($index % 2 === 0)
+                        bg-[radial-gradient(circle_at_70%_90%,_rgba(16,185,129,0.35)_0%,_rgba(6,78,59,0.1)_45%,_rgba(24,24,27,1)_90%)]
+                    @else
+                        bg-[radial-gradient(circle_at_70%_90%,_rgba(244,63,94,0.35)_0%,_rgba(136,19,55,0.1)_45%,_rgba(24,24,27,1)_90%)]
+                    @endif">
                     <h2 class="text-[20px] font-bold text-sky-700 mb-2">{{ $spis->name ?? '-' }}</h2>
                     <p><strong>Region:</strong> {{ $spis->region->name ?? '-' }}</p>
                     <p><strong>Dodany przez:</strong> {{ $spis->user->name ?? '-' }}</p>

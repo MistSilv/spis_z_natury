@@ -83,10 +83,13 @@
 <body class="p-6 bg-white">
 
   <div class="no-print flex justify-end mb-4">
-    <button onclick="window.print()" class="bg-sky-800 text-white px-4 py-2 rounded hover:bg-sky-600 transition">
-        Drukuj / Zapisz PDF
+    <button 
+      onclick="alert('💡 Przy zapisie wybierz nazwę: {{ $spis->name }}.pdf'); window.print();" 
+      class="bg-sky-800 text-white px-4 py-2 rounded hover:bg-sky-600 transition">
+      Drukuj / Zapisz PDF
     </button>
   </div>
+
 
   <div class="mb-4">
     <p class="leading-tight text-sm">
