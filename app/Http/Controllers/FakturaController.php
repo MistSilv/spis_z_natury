@@ -193,5 +193,58 @@ class FakturaController extends Controller
 
         return response()->json($result);
     }
+
+    public function updateProduct(Request $request, Faktura $faktura, $productId)
+    {
+        // Znajdujemy rekord produktu powiązany z fakturą
+        $produkt = $faktura->produkty()->findOrFail($productId);
+
+        $field = $request->get('field');
+        $value = $request->get('value');
+
+        // Walidacja dynamiczna
+        $rules = match ($field) {
+            'name' => ['required', 'string', 'max:255'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'quantity' => ['required', 'numeric', 'min:0'],
+            default => ['nullable'],
+        };
+
+        $request->validate(['value' => $rules]);
+
+        // Aktualizacja pola
+        $produkt->update([$field => $value]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Zaktualizowano pole '{$field}' dla produktu.",
+            'produkt' => $produkt,
+        ]);
+    }
+
+    public function getProducts(Faktura $faktura)
+    {
+        $produkty = $faktura->produkty()
+            ->select('id', 'name', 'price', 'quantity', 'unit', 'barcode')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return response()->json($produkty);
+    }
+
+    public function destroyProduct(Faktura $faktura, $productId)
+    {
+        // Znajdź produkt powiązany z fakturą
+        $produkt = $faktura->produkty()->findOrFail($productId);
+
+        // Usuń produkt
+        $produkt->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Produkt został usunięty z faktury.'
+        ]);
+    }
+
     
 }

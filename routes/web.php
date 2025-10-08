@@ -109,6 +109,14 @@ Route::prefix('faktury')->name('faktury.')->group(function () {
 
     // Nowe wyszukiwanie produktów do faktury
     Route::get('/products/live-search', [FakturaController::class, 'productsLiveSearch'])->name('products.live-search');
+    // Pobranie listy produktów z faktury (AJAX)
+
+    // Usuwanie produktu z faktury
+    Route::delete('/{faktura}/products/{product}', [FakturaController::class, 'destroyProduct'])->name('products.destroy');
+
+    // 🔥 Nowy route do aktualizacji produktu z faktury
+    Route::put('/{faktura}/products/{product}', [FakturaController::class, 'updateProduct'])->name('products.update');
+    Route::get('/{faktura}/products', [FakturaController::class, 'getProducts'])->name('products.list');
 });
 
 
