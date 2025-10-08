@@ -113,8 +113,15 @@
                                        placeholder="Cena" class="w-24 border border-neutral-700 rounded bg-neutral-900 p-1 text-gray-100" required>
                                 <input type="number" step="0.01" :name="`products[${index}][vat]`" x-model="row.vat"
                                        placeholder="VAT %" class="w-20 border border-neutral-700 rounded bg-neutral-900 p-1 text-gray-100">
-                                <input type="number" step="0.01" :name="`products[${index}][quantity]`" x-model="row.quantity"
-                                       placeholder="Ilość" class="w-20 border border-neutral-700 rounded bg-neutral-900 p-1 text-gray-100" required>
+                                <input type="number" 
+                                        :step="['szt','opak'].includes(row.unit) ? 1 : 0.01" 
+                                        :name="`products[${index}][quantity]`" 
+                                        x-model.number="row.quantity"
+                                        @input="if(['szt','opak'].includes(row.unit)) row.quantity = Math.floor(row.quantity)"
+                                        placeholder="Ilość" 
+                                        class="w-20 border border-neutral-700 rounded bg-neutral-900 p-1 text-gray-100" 
+                                        required>
+
                                 <select :name="`products[${index}][unit]`" x-model="row.unit"
                                         class="w-28 border border-neutral-700 rounded bg-neutral-900 p-1 text-gray-100" required>
                                     <option value="">-- jednostka --</option>
@@ -183,8 +190,11 @@
                 <h3 class="text-lg font-semibold text-sky-500 mb-3 text-center">
                     Edytuj <span x-text="editField"></span>
                 </h3>
-                <input type="text" x-model="editValue"
-                       class="w-full border border-neutral-700 bg-neutral-800 text-gray-100 rounded p-2 mb-4 focus:ring-2 focus:ring-sky-700">
+                <input type="number" x-model.number="editValue"
+                        :step="editStep"
+                        @input="if(editField==='quantity' && ['szt','opak'].includes(contextProduct.unit)) editValue = Math.floor(editValue)"
+                        class="w-full border border-neutral-700 bg-neutral-800 text-gray-100 rounded p-2 mb-4 focus:ring-2 focus:ring-sky-700">
+
                 <div class="flex justify-end gap-2">
                     <button @click="closeEditModal" class="px-3 py-1 rounded bg-neutral-700 hover:bg-neutral-600 text-gray-300">Anuluj</button>
                     <button @click="saveEdit" class="px-3 py-1 rounded bg-sky-700 hover:bg-sky-600 text-white">Zapisz</button>
@@ -235,11 +245,20 @@
                 openEditModal(field) {
                     this.editField = field;
                     this.editValue = this.contextProduct[field];
+
+                    // Dodajemy dynamiczny krok dla ilości
+                    if(field === 'quantity') {
+                        this.editStep = ['szt','opak'].includes(this.contextProduct.unit) ? 1 : 0.01;
+                    } else {
+                        this.editStep = 0.01;
+                    }
+
                     this.editModalOpen = true;
                     this.closeAddModal();
                     this.closeDeleteModal();
                     this.closeContextMenu();
                 },
+
                 closeEditModal() { this.editModalOpen = false; },
 
                 openDeleteModal() {
@@ -268,8 +287,6 @@
                         unit_name: product.unit_name ?? '',
                         barcode: product.ean ?? ''
                     });
-                    this.resultsVisible = false;
-                    this.query = '';
                 },
                 addEmptyRow() {
                     this.rows.push({ product_id: '', name: '', price: '', vat: '', quantity: 1, unit: '', barcode: '' });
