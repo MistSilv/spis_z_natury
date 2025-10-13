@@ -39,7 +39,7 @@
                 <tbody class="divide-y divide-neutral-700">
                     @forelse ($produkty as $produkt)
                         <tr class="even:bg-black hover:bg-neutral-800/70 transition cursor-pointer"
-                            @contextmenu.prevent="openContextMenu($event, @json($produkt))">
+                            @contextmenu.prevent='openContextMenu($event, @json($produkt))'>
                             <td class="p-2">{{ $produkt->name }}</td>
                             <td class="p-2 text-teal-500 font-semibold">{{ number_format($produkt->price_net, 2) }}</td>
                             <td class="p-2 text-yellow-400">{{ $produkt->vat ?? '-' }}</td>
@@ -47,6 +47,7 @@
                             <td class="p-2">{{ $produkt->unit ?? '-' }}</td>
                             <td class="p-2">{{ $produkt->barcode ?? '-' }}</td>
                         </tr>
+
                     @empty
                         <tr><td colspan="6" class="p-4 text-center text-gray-500">Brak produktów</td></tr>
                     @endforelse
@@ -74,7 +75,7 @@
                         <div @click="addProductFromSearch(product)"
                              class="p-2 border-b border-neutral-700 cursor-pointer hover:bg-neutral-700/30">
                             <span x-text="product.name"></span> — 
-                            <span x-text="(product.price_net || product.price || 0).toFixed(2)"></span> 
+                            <span x-text="formatPrice(product.price_net || product.price)"></span> 
                             <span x-text="product.unit_name"></span>
                         </div>
                     </template>
@@ -128,14 +129,15 @@
                                     placeholder="Ilość"
                                     class="w-20 border border-neutral-700 rounded bg-neutral-900 p-1 text-gray-100" required>
 
-                                <select :name="`products[${index}][unit]`" x-model="row.unit"
-                                        class="w-28 border border-neutral-700 rounded bg-neutral-900 p-1 text-gray-100" required>
-                                    <option value="">-- jednostka --</option>
+                                <select :name="`products[${index}][unit]`" 
+                                        x-model="row.unit"
+                                        class="w-28 border border-neutral-700 rounded bg-neutral-900 p-1 text-gray-100" 
+                                        required>
+                                    <option value="">-- wybierz jednostkę --</option>
                                     <template x-for="u in units" :key="u.code">
-                                        <option :value="u.code" x-text="`${u.name} (${u.code})`"></option>
+                                        <option :value="u.code" x-text="`${u.name} (${u.code})`" :selected="u.code === row.unit"></option>
                                     </template>
                                 </select>
-
 
                                 <input type="text"
                                     :name="`products[${index}][barcode]`"
@@ -174,7 +176,10 @@
                 openAddModal() { 
                     this.addModalOpen = true; 
                 },
-                closeAddModal() { this.addModalOpen = false; },
+                closeAddModal() { 
+                    this.addModalOpen = false; 
+                    this.rows = [];
+                },
 
                 addEmptyRow() {
                     this.rows.push({
@@ -184,7 +189,7 @@
                         vat: '',
                         price_gross: '',
                         quantity: 1,
-                        unit: this.units.length ? this.units[0].code : '',
+                        unit: '',
                         barcode: '',
                         readonlyNet: false,
                         readonlyGross: false
@@ -204,27 +209,42 @@
                         .then(data => this.searchResults = data);
                 },
 
-                addProductFromSearch(product) {
-                    const newRows = [...this.rows];
+                formatPrice(price) {
+                    if (price === null || price === undefined || price === '') {
+                        return '0.00';
+                    }
+                    const num = parseFloat(price);
+                    return isNaN(num) ? '0.00' : num.toFixed(2);
+                },
 
-                    newRows.push({
+                addProductFromSearch(product) {
+                    let matchedUnit = '';
+                    if (product.unit && this.units.length) {
+                        const foundUnit = this.units.find(u => u.code === product.unit);
+                        matchedUnit = foundUnit ? foundUnit.code : '';
+                    }
+
+                    const priceNet = product.price_net || product.price || '';
+                    const safePriceNet = priceNet ? parseFloat(priceNet) : '';
+
+                    const tempRows = [...this.rows];
+                    tempRows.push({
                         product_id: product.id,
                         name: product.name,
-                        price_net: product.price_net || product.price || '',
+                        price_net: safePriceNet,
                         vat: '',
                         price_gross: '',
                         quantity: 1,
-                        unit: product.unit ?? '', // 🔹 direct assignment, just like before
+                        unit: matchedUnit,
                         barcode: product.barcode || product.ean || '',
                         readonlyNet: false,
                         readonlyGross: false
                     });
 
-                    this.rows = newRows;
+                    this.rows = tempRows;
                     this.searchResults = [];
                     this.searchQuery = '';
                 },
-
 
                 isNumeric(v) { return v !== '' && v !== null && !isNaN(parseFloat(v)); },
 
