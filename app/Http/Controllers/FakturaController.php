@@ -166,10 +166,7 @@ class FakturaController extends Controller
         $query = $request->get('q', '');
         $date  = $request->get('date');
 
-        Log::info('LiveSearch start', [
-            'query' => $query,
-            'date' => $date,
-        ]);
+
 
         $products = Product::with('unit', 'barcodes')
             ->when($query, function ($q) use ($query) {
@@ -179,10 +176,6 @@ class FakturaController extends Controller
             ->limit(15)
             ->get();
 
-        Log::info('LiveSearch produkty znalezione', [
-            'count' => $products->count(),
-            'ids' => $products->pluck('id')->toArray(),
-        ]);
 
         $result = $products->map(function ($product) use ($date) {
             $priceEntry = $date
@@ -201,14 +194,11 @@ class FakturaController extends Controller
                 'barcode'   => $product->barcodes->first()?->barcode,
             ];
 
-            Log::debug("LiveSearch produkt mapowany [{$product->id}]", $mapped);
+
             return $mapped;
         });
 
-        Log::info('LiveSearch wynik końcowy', [
-            'total' => $result->count(),
-            'first_result' => $result->first(),
-        ]);
+
 
         return response()->json($result);
     }
