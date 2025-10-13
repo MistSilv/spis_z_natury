@@ -18,6 +18,21 @@
             </div>
 
             <div>
+                <label for="region_id" class="block text-sm font-semibold text-sky-600 mb-1">Region</label>
+                <select 
+                    id="region_id" 
+                    name="region_id" 
+                    required
+                    class="w-full rounded-lg border border-neutral-700 bg-neutral-900 text-gray-100 p-2 focus:ring-2 focus:ring-sky-700 focus:outline-none"
+                >
+                    <option value="">-- Wybierz region --</option>
+                    @foreach($regions as $region)
+                        <option value="{{ $region->id }}">{{ $region->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
                 <label for="data_wystawienia" class="block text-sm font-semibold text-sky-600 mb-1">Data wystawienia</label>
                 <input 
                     id="data_wystawienia" 

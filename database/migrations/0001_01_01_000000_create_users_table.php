@@ -154,9 +154,13 @@ return new class extends Migration
             $table->date('data_wystawienia');
             $table->date('data_sprzedazy')->nullable();
             $table->text('notes')->nullable();
-            $table->timestamps();
 
+            // Dodanie regionu
+            $table->foreignId('region_id')->constrained('regions')->cascadeOnDelete();
+
+            $table->timestamps();
         });
+
 
         Schema::create('faktury_produkty', function (Blueprint $table) {
             $table->id();
@@ -169,7 +173,9 @@ return new class extends Migration
 
             // dane fakturowe (zawsze muszą zostać)
             $table->string('name'); // nazwa produktu w momencie faktury
-            $table->decimal('price', 15, 2); // cena (musi zostać, bo faktura ma własne ceny)
+            $table->decimal('price_net', 15, 2); // cena netto – obowiązkowa
+            $table->decimal('price_gross', 15, 2)->nullable(); // cena brutto – może być null
+            $table->decimal('vat', 5, 2)->nullable(); // VAT w procentach – może być null
             $table->decimal('quantity', 15, 2)->default(1);
             $table->string('unit'); // jednostka, np. "kg", "szt"
             $table->string('barcode', 13)->nullable();
@@ -179,9 +185,6 @@ return new class extends Migration
             $table->index(['faktura_id']);
             $table->index(['product_id']);
         });
-
-            
-
 
 
         Schema::create('produkt_skany', function (Blueprint $table) {

@@ -16,6 +16,7 @@ class Faktura extends Model
         'data_wystawienia',
         'data_sprzedazy',
         'notes',
+        'region_id',
     ];
 
     // Automatyczne rzutowanie pól na typ date (Carbon)
@@ -29,4 +30,11 @@ class Faktura extends Model
     {
         return $this->hasMany(FakturyProdukt::class, 'faktura_id');
     }
+
+    // Relacja do regionu
+    public function region()
+    {
+        return $this->belongsTo(Region::class, 'region_id');
+    }
+
 }

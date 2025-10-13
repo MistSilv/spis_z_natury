@@ -3,9 +3,27 @@
 
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-sky-700">Lista faktur</h1>
-            <a href="{{ route('faktury.create') }}" class="inline-block px-4 py-2 bg-sky-800 text-white rounded hover:bg-sky-600 font-bold shadow">
-                Dodaj fakturę
-            </a>
+
+            <div class="flex items-center gap-4">
+                <!-- Filtrowanie po regionie -->
+                <form method="GET" class="flex items-center gap-2">
+                    <select name="region_id" class="rounded-lg border border-neutral-700 bg-neutral-900 text-gray-100 p-2 focus:ring-2 focus:ring-sky-700">
+                        <option value="">-- Wszystkie regiony --</option>
+                        @foreach($regions as $region)
+                            <option value="{{ $region->id }}" {{ request('region_id') == $region->id ? 'selected' : '' }}>
+                                {{ $region->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="px-3 py-2 bg-sky-800 text-white rounded hover:bg-sky-600 font-bold shadow">
+                        Filtruj
+                    </button>
+                </form>
+
+                <a href="{{ route('faktury.create') }}" class="inline-block px-4 py-2 bg-sky-800 text-white rounded hover:bg-sky-600 font-bold shadow">
+                    Dodaj fakturę
+                </a>
+            </div>
         </div>
 
         <div class="overflow-x-auto overflow-y-auto max-h-[500px] border border-neutral-700 rounded-lg shadow-inner mb-4">
@@ -16,6 +34,7 @@
                         <th class="p-2">Numer faktury</th>
                         <th class="p-2">Data sprzedaży</th>
                         <th class="p-2">Utworzono</th>
+                        <th class="p-2">Region</th>
                         <th class="p-2">Akcje</th>
                     </tr>
                 </thead>
@@ -26,6 +45,7 @@
                             <td class="p-2 font-semibold text-sky-700">{{ $faktura->number }}</td>
                             <td class="p-2">{{ $faktura->data_sprzedazy?->format('Y-m-d') ?? '-' }}</td>
                             <td class="p-2">{{ $faktura->created_at->format('Y-m-d') }}</td>
+                            <td class="p-2">{{ $faktura->region?->name ?? '-' }}</td>
                             <td class="p-2 flex flex-wrap gap-2">
                                 <a href="{{ route('faktury.show', $faktura) }}" 
                                    class="px-3 py-1 bg-sky-800 hover:bg-sky-600 text-slate-100 rounded shadow transition">
@@ -39,7 +59,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="p-4 text-center text-gray-400">Brak faktur</td>
+                            <td colspan="6" class="p-4 text-center text-gray-400">Brak faktur</td>
                         </tr>
                     @endforelse
                 </tbody>
