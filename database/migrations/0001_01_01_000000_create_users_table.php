@@ -26,6 +26,7 @@ return new class extends Migration
             ['code' => 'sklep', 'name' => 'Sklep', 'created_at' => now(), 'updated_at' => now()],
             ['code' => 'garmaz', 'name' => 'Garmaż', 'created_at' => now(), 'updated_at' => now()],
             ['code' => 'piekarnia', 'name' => 'Piekarnia', 'created_at' => now(), 'updated_at' => now()],
+            ['code' => 'bistro', 'name' => 'Bistro', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         Schema::create('users', function (Blueprint $table) {
