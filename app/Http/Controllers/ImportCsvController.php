@@ -65,9 +65,11 @@ class ImportCsvController extends Controller
                 'cena_brutto' => isset($row[33]) ? (float) str_replace(',', '.', $row[33]) : null, 
                 'wartosc_netto' => isset($row[34]) ? (float) str_replace(',', '.', $row[34]) : null, 
                 'wartosc_brutto' => isset($row[35]) ? (float) str_replace(',', '.', $row[35]) : null, 
+                'co_to' => isset($row[36]) ? substr($row[36], 0, 255) : null,
                 'vat' => isset($row[37]) ? rtrim(substr($row[37], 0, 5), '0') : null,
-                'kod' => isset($row[41]) ? substr($row[41], 0, 50) : null, 
+                'co_to_dwa' => isset($row[38]) ? substr($row[38], 0, 255) : null,
                 'ean' => isset($row[40]) ? substr($row[40], 0, 50) : null, 
+                'kod' => isset($row[41]) ? substr($row[41], 0, 50) : null, 
                 'powod' => isset($row[46]) ? substr($row[46], 0, 255) : null, 
                 'imported_at' => now(),
             ]);
