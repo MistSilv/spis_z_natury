@@ -10,6 +10,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SpisPdfController;
 use App\Http\Controllers\SpisProduktyTmpController;
 use App\Http\Controllers\FakturaController;
+use App\Http\Controllers\ImportCsvController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -119,5 +120,7 @@ Route::prefix('faktury')->name('faktury.')->group(function () {
     Route::get('/{faktura}/products', [FakturaController::class, 'getProducts'])->name('products.list');
 });
 
+Route::get('/import', [ImportCsvController::class, 'showForm'])->name('import.form');
+Route::post('/import', [ImportCsvController::class, 'import'])->name('import.csv');
 
 });

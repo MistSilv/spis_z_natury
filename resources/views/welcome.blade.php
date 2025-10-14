@@ -35,6 +35,12 @@
                 class="bg-sky-800 hover:bg-sky-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-cyan-800/50 transition">
                 Faktury
             </button>
+
+            <a href="{{ route('import.form') }}"
+                class="bg-sky-800 hover:bg-sky-600 text-slate-100 font-semibold py-2 px-6 rounded-2xl shadow-md border border-cyan-800/50 transition">
+                📥 Importuj dane z CSV
+                </a>
+
             
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

@@ -263,6 +263,23 @@ return new class extends Migration
         });
 
 
+        Schema::create('imported_records', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('region_id')->constrained('regions');
+            $table->string('dostawca')->nullable();          // Dostawca
+            $table->string('artykul')->nullable();           // Nazwa produktu
+            $table->decimal('ilosc', 12, 2)->nullable();     // Ilość
+            $table->decimal('cena_netto', 12, 2)->nullable(); // Cena netto
+            $table->decimal('cena_brutto', 12, 2)->nullable(); // Cena brutto
+            $table->decimal('wartosc_netto', 12, 2)->nullable(); // Wartość netto
+            $table->decimal('wartosc_brutto', 12, 2)->nullable(); // Wartość brutto
+            $table->string('vat', 10)->nullable();           // VAT
+            $table->string('kod', 50)->nullable();           // Kod
+            $table->string('ean', 50)->nullable();           // EAN
+            $table->string('powod')->nullable();             // Powód
+            $table->timestamp('imported_at')->useCurrent();
+        });
+
 
 
 
@@ -277,6 +294,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('imported_records');
         Schema::dropIfExists('spis_produkty');
         Schema::dropIfExists('spis_z_natury');
         Schema::dropIfExists('produkt_skany');
