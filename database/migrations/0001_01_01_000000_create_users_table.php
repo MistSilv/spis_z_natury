@@ -271,7 +271,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('region_id')->constrained('regions');
             $table->string('dostawca')->nullable();          
-            $table->string('artykul')->nullable();           
+            $table->string('artykul')->nullable(); 
+            $table->string('dzial')->nullable();          
             $table->decimal('ilosc', 12, 2)->nullable();     
             $table->decimal('cena_netto', 12, 2)->nullable(); 
             $table->decimal('cena_brutto', 12, 2)->nullable(); 
@@ -284,15 +285,7 @@ return new class extends Migration
             $table->string('kod', 50)->nullable();           
             $table->string('powod')->nullable();           
             $table->timestamp('imported_at')->useCurrent();
-        });
-
-
-
-
-
-
-
-
+               });
     }
 
     /**
@@ -318,6 +311,6 @@ return new class extends Migration
         Schema::dropIfExists('jobs');
         Schema::dropIfExists('job_batches');
         Schema::dropIfExists('failed_jobs');
-
     }
 };
+

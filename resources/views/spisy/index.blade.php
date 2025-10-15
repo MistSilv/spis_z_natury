@@ -27,6 +27,10 @@
                    class="bg-sky-800 hover:bg-sky-600 text-slate-100 font-semibold py-3 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
                    Piekarnia
                 </a>
+                <a href="{{ route('spisy.create', ['region_id' => 5]) }}"
+                   class="bg-sky-800 hover:bg-sky-600 text-slate-100 font-semibold py-3 px-6 rounded-2xl shadow-md border border-teal-800/50 transition">
+                   Bistro
+                </a>
             </div>
 
             <div class="border-t border-cyan-700/50 pt-6">

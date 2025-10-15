@@ -60,6 +60,7 @@ class ImportCsvController extends Controller
                 'region_id' => $region->id,
                 'dostawca' => isset($row[29]) ? substr($row[29], 0, 255) : null,   
                 'artykul' => isset($row[30]) ? substr($row[30], 0, 255) : null,   
+                'dzial' => isset($row[25]) ? substr($row[25], 0, 255) : null,
                 'ilosc' => isset($row[31]) ? (float) str_replace(',', '.', $row[31]) : null, 
                 'cena_netto' => isset($row[32]) ? (float) str_replace(',', '.', $row[32]) : null, 
                 'cena_brutto' => isset($row[33]) ? (float) str_replace(',', '.', $row[33]) : null, 
