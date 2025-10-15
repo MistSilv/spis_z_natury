@@ -68,7 +68,7 @@ class ProduktZuzycieSeeder extends Seeder
                     $valueGross    = $this->parseNumber($data[35] ?? null);
                     $co_to         = trim($data[36] ?? '');
                     $vat           = $this->parseVat($data[37] ?? null);
-                    $co_to_dwa     = trim($data[38] ?? '');
+                    $NIP_Dostawcy  = trim($data[38] ?? '');
                     $idabaco       = trim($data[40] ?? '');
                     $ean           = trim($data[41] ?? '');
                     $powod         = trim($data[46] ?? '');
@@ -84,7 +84,7 @@ class ProduktZuzycieSeeder extends Seeder
                         'wartosc_brutto' => $valueGross,
                         'co_to'          => $co_to,
                         'vat'            => $vat,
-                        'co_to_dwa'      => $co_to_dwa,
+                        'NIP_Dostawcy'   => $NIP_Dostawcy,
                         'kod'            => $idabaco,
                         'ean'            => $ean,
                         'powod'          => $powod,

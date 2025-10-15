@@ -279,7 +279,7 @@ return new class extends Migration
             $table->decimal('wartosc_brutto', 12, 2)->nullable(); 
             $table->decimal('co_to', 12, 2)->nullable();
             $table->string('vat', 10)->nullable();    
-            $table->decimal('co_to_dwa', 12, 2)->nullable();       
+            $table->decimal('NIP_Dostawcy', 12, 2)->nullable();       
             $table->string('ean', 50)->nullable();          
             $table->string('kod', 50)->nullable();           
             $table->string('powod')->nullable();           
