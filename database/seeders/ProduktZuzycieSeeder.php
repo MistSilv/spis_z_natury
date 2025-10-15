@@ -66,7 +66,9 @@ class ProduktZuzycieSeeder extends Seeder
                     $priceGross    = $this->parseNumber($data[33] ?? null);
                     $valueNet      = $this->parseNumber($data[34] ?? null);
                     $valueGross    = $this->parseNumber($data[35] ?? null);
+                    $co_to         = trim($data[36] ?? '');
                     $vat           = $this->parseVat($data[37] ?? null);
+                    $NIP_Dostawcy  = trim($data[38] ?? '');
                     $idabaco       = trim($data[40] ?? '');
                     $ean           = trim($data[41] ?? '');
                     $powod         = trim($data[46] ?? '');
@@ -80,8 +82,10 @@ class ProduktZuzycieSeeder extends Seeder
                         'cena_brutto'    => $priceGross,
                         'wartosc_netto'  => $valueNet,
                         'wartosc_brutto' => $valueGross,
+                        'co_to'          => $co_to,
                         'vat'            => $vat,
-                        'kod'       => $idabaco,
+                        'NIP_Dostawcy'   => $NIP_Dostawcy,
+                        'kod'            => $idabaco,
                         'ean'            => $ean,
                         'powod'          => $powod,
 
