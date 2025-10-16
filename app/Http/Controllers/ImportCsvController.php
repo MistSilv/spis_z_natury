@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Region;
+use Carbon\Carbon;
 
 class ImportCsvController extends Controller
 {
@@ -45,6 +46,18 @@ class ImportCsvController extends Controller
         $rows = array_map('str_getcsv', file($path));
         $count = 0;
 
+        $dataProt = null;
+        if (!empty($rows[0])) {
+            $firstRowStr = implode(',', $rows[0]);
+            if (preg_match('/(\d{2}\/\d{2}\/\d{2,4})/', $firstRowStr, $matches)) {
+                try {
+                    $dataProt = Carbon::createFromFormat('d/m/y', $matches[1])->format('Y-m-d');
+                } catch (\Exception $e) {
+                    \Log::warning("Nie udało się sparsować daty protokołu: {$matches[1]}");
+                }
+            }
+        }
+
       foreach ($rows as $index => $row) {
             // Jeżeli cały wiersz jest pusty (np. koniec pliku), pomiń tylko taki przypadek
             if (count($row) === 1 && trim($row[0]) === '') {
@@ -73,6 +86,7 @@ class ImportCsvController extends Controller
                 'kod' => isset($row[41]) ? substr($row[41], 0, 50) : null, 
                 'powod' => isset($row[46]) ? substr($row[46], 0, 255) : null, 
                 'imported_at' => now(),
+                'data_protokolu' => $dataProt,
             ]);
 
             $count++;

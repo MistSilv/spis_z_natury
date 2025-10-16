@@ -41,11 +41,24 @@ class ProduktZuzycieSeeder extends Seeder
                 continue;
             }
 
-            // WCZYTAJ I PRZEKONWERTUJ PLIK TAK JAK W KONTROLLERZE
             $path = $file->getPathname();
             $contents = file_get_contents($path);
 
-            // Poprawne kodowania - TAK JAK W KONTROLLERZE
+            // --- 🔍 WYCIĄGNIJ DATĘ Z PIERWSZEGO WIERSZA ---
+            preg_match('/(\d{2}\/\d{2}\/\d{2,4})/', $contents, $matches);
+            $dataProt = null;
+            if (!empty($matches[1])) {
+                try {
+                    $dataProt = Carbon::createFromFormat('d/m/y', $matches[1])->format('Y-m-d');
+                    $this->command->info("📅 Wykryto datę protokołu: {$dataProt}");
+                } catch (\Exception $e) {
+                    $this->command->warn("⚠️ Nie udało się sparsować daty: {$matches[1]}");
+                }
+            } else {
+                $this->command->warn("⚠️ Nie znaleziono daty w nagłówku pliku.");
+            }
+
+            // --- Kodowanie ---
             $encodings = ['UTF-8', 'ISO-8859-2', 'WINDOWS-1252', 'ASCII'];
             $encoding = mb_detect_encoding($contents, $encodings, true);
 
@@ -54,18 +67,13 @@ class ProduktZuzycieSeeder extends Seeder
                 file_put_contents($path, $contents);
             }
 
-            // UŻYJ TEJ SAMEJ METODY CO KONTROLLER
             $rows = array_map('str_getcsv', file($path));
             $insertData = [];
             $count = 0;
 
             foreach ($rows as $index => $row) {
-                // Jeżeli cały wiersz jest pusty (np. koniec pliku), pomiń tylko taki przypadek
-                if (count($row) === 1 && trim($row[0]) === '') {
-                    continue;
-                }
+                if (count($row) === 1 && trim($row[0]) === '') continue;
 
-                // Debug: pokaż strukturę pierwszego wiersza
                 if ($count === 0) {
                     $this->command->info("🔍 Struktura pierwszego wiersza:");
                     $this->command->info("   Liczba kolumn: " . count($row));
@@ -73,13 +81,11 @@ class ProduktZuzycieSeeder extends Seeder
                     $this->command->info("   Kolumna 30 (artykul): " . ($row[30] ?? 'BRAK'));
                 }
 
-                // Sprawdź czy mamy wystarczająco kolumn
                 if (count($row) < 47) {
                     $this->command->warn("⚠️ Wiersz #{$index} ma tylko " . count($row) . " kolumn (wymagane min. 47)");
                     continue;
                 }
 
-                // UŻYJ DOKŁADNIE TEGO SAMEGO MAPOWANIA CO W KONTROLLERZE
                 $insertData[] = [
                     'region_id' => $region->id,
                     'dostawca' => isset($row[29]) ? substr($row[29], 0, 255) : null,   
@@ -91,24 +97,16 @@ class ProduktZuzycieSeeder extends Seeder
                     'wartosc_netto' => isset($row[34]) ? (float) str_replace(',', '.', $row[34]) : null, 
                     'wartosc_brutto' => isset($row[35]) ? (float) str_replace(',', '.', $row[35]) : null, 
                     'co_to' => isset($row[36]) ? substr($row[36], 0, 255) : null,
-                    'vat' => isset($row[37]) ? $this->parseVatLikeController($row[37]) : null, // ZMIENIONE
+                    'vat' => isset($row[37]) ? $this->parseVatLikeController($row[37]) : null,
                     'NIP_Dostawcy' => isset($row[38]) ? substr($row[38], 0, 255) : null,
                     'ean' => isset($row[40]) ? substr($row[40], 0, 50) : null, 
                     'kod' => isset($row[41]) ? substr($row[41], 0, 50) : null, 
                     'powod' => isset($row[46]) ? substr($row[46], 0, 255) : null, 
                     'imported_at' => now(),
-
+                    'data_protokolu' => $dataProt, // 🆕 dodane pole
                 ];
 
                 $count++;
-
-                // Debug: pokaż pierwszy rekord
-                if ($count === 1) {
-                    $this->command->info("🔍 Pierwszy rekord do wstawienia:");
-                    $this->command->info("   Dostawca: " . $insertData[0]['dostawca']);
-                    $this->command->info("   Artykuł: " . $insertData[0]['artykul']);
-                    $this->command->info("   Ilość: " . $insertData[0]['ilosc']);
-                }
             }
 
             if (!empty($insertData)) {
@@ -119,8 +117,6 @@ class ProduktZuzycieSeeder extends Seeder
                     $this->command->info("✅ Zaimportowano: " . count($insertData) . " rekordów z {$filename}");
                 } catch (\Exception $e) {
                     $this->command->error("❌ Błąd podczas importu {$filename}: " . $e->getMessage());
-                    
-                    // Debug: pokaż szczegóły błędu
                     if (count($insertData) > 0) {
                         $this->command->error("🔍 Problem z pierwszym rekordem:");
                         $this->command->error(print_r($insertData[0], true));
@@ -128,45 +124,15 @@ class ProduktZuzycieSeeder extends Seeder
                 }
             } else {
                 $this->command->warn("⚠️ Brak danych do importu z pliku {$filename}");
-                
-                // Debug: pokaż co jest w pliku
-                $this->command->info("🔍 Zawartość pliku (pierwsze 3 wiersze):");
-                for ($i = 0; $i < min(3, count($rows)); $i++) {
-                    $this->command->info("   Wiersz {$i}: " . json_encode($rows[$i]));
-                }
             }
         }
 
         $this->command->info("🎯 Import zakończony.");
     }
 
-    /**
-     * Parsowanie VAT tak jak w kontrolerze - rtrim(substr($row[37], 0, 5), '0')
-     */
     private function parseVatLikeController($value)
     {
         if (empty($value)) return null;
         return rtrim(substr($value, 0, 5), '0');
-    }
-
-    /**
-     * Stara metoda - dla kompatybilności
-     */
-    private function parseNumber($value)
-    {
-        if (empty($value)) return null;
-        $value = str_replace([' ', ','], ['', '.'], trim($value));
-        return is_numeric($value) ? (float)$value : null;
-    }
-
-    /**
-     * Stara metoda - dla kompatybilności  
-     */
-    private function parseVat($value)
-    {
-        if (empty($value)) return null;
-        $num = preg_replace('/[^0-9]/', '', $value);
-        if (!is_numeric($num)) return null;
-        return ($num / 100) . '%';
     }
 }

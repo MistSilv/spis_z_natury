@@ -270,22 +270,24 @@ return new class extends Migration
         Schema::create('imported_records', function (Blueprint $table) {
             $table->id();
             $table->foreignId('region_id')->constrained('regions');
-            $table->string('dostawca')->nullable();          
-            $table->string('artykul')->nullable(); 
-            $table->string('dzial')->nullable();          
-            $table->decimal('ilosc', 12, 2)->nullable();     
-            $table->decimal('cena_netto', 12, 2)->nullable(); 
-            $table->decimal('cena_brutto', 12, 2)->nullable(); 
-            $table->decimal('wartosc_netto', 12, 2)->nullable(); 
-            $table->decimal('wartosc_brutto', 12, 2)->nullable(); 
+            $table->string('dostawca')->nullable();
+            $table->string('artykul')->nullable();
+            $table->string('dzial')->nullable();
+            $table->decimal('ilosc', 12, 2)->nullable();
+            $table->decimal('cena_netto', 12, 2)->nullable();
+            $table->decimal('cena_brutto', 12, 2)->nullable();
+            $table->decimal('wartosc_netto', 12, 2)->nullable();
+            $table->decimal('wartosc_brutto', 12, 2)->nullable();
             $table->decimal('co_to', 12, 2)->nullable();
-            $table->string('vat', 10)->nullable();    
-            $table->decimal('NIP_Dostawcy', 12, 2)->nullable();       
-            $table->string('ean', 50)->nullable();          
-            $table->string('kod', 50)->nullable();           
-            $table->string('powod')->nullable();           
+            $table->string('vat', 10)->nullable();
+            $table->decimal('NIP_Dostawcy', 12, 2)->nullable();
+            $table->string('ean', 50)->nullable();
+            $table->string('kod', 50)->nullable();
+            $table->string('powod')->nullable();
+            $table->date('data_protokolu')->nullable();
             $table->timestamp('imported_at')->useCurrent();
-               });
+             // 🆕 nowe pole  
+        });
     }
 
     /**
